@@ -9,13 +9,41 @@
 #'
 #'@import GenomicRanges
 #'@import SummarizedExperiment
-#'@importFrom dplyr arrange
 #'@importFrom tidyr pivot_wider
 #'@importFrom tibble column_to_rownames
 #'
 #'@export
 #'
-make_xInt_dataset <- function( site.list, features, min.overlap = 1, id.col = "name" ){
+make_xInt_dataset <- function( site.list,
+                               features,
+                               sample.names = NULL,
+                               conditions,
+                               condition.levels,
+                               min.overlap = 1,
+                               id.col = "name" ){
+
+  if( is.null( sample.names ) ){
+    sample.names <- names( sites.list )
+    if( is.null( sample.names ) ){
+      stop( "Sample names must be provided or the elements in site.list must be named.",
+            call. = FALSE )
+    }
+  }
+
+  if( length( sample.names ) != length( site.list ) ){
+    stop( "The number of sample names does not match the number of integration site datasets.",
+          call. = FALSE )
+  }
+
+  if( length( sample.names ) != length( conditions ) ){
+    stop( "The number of sample names does not match the number of conditions.",
+          call. = FALSE )
+  }
+
+  if( !all( conditions %in% condition.levels ) ){
+    stop( "Not all conditions found in condition levels.",
+          call. = FALSE )
+  }
 
   hits <- lapply( X = site.list,
                   FUN = function(x){
@@ -29,42 +57,42 @@ make_xInt_dataset <- function( site.list, features, min.overlap = 1, id.col = "n
                           FUN = function(x){
                             total.sites <- length( countSubjectHits(x) )
                             overlapping <- length( countSubjectHits(x)[ countSubjectHits(x) != 0 ] )
-                            # non.overlapping <- length( countSubjectHits(x)[  countSubjectHits(x) == 0 ] )
                             frac.overlap <- overlapping/total.sites
                             multioverlap <- length( countSubjectHits(x)[ countSubjectHits(x) > 1 ] )
                             if ( multioverlap != 0 ){
-                               warning(cat( "Sites overlapping multiple features are present in the data.",
-                                            "\n",
-                                            "Use 'collapse_features()' to combined overlapping feature ranges if assessment of total feature integration is desired.",
-                                       call. = FALSE )
+                               warning( cat( "Sites overlapping multiple features are present in the data.",
+                                             "\n",
+                                             "Use 'collapse_features()' to combined overlapping feature ranges if assessment of total feature integration is desired.",
+                                             call. = FALSE )
                                )
-                            }
+                              }
 
                             data.frame( total.sites = total.sites,
                                         overlapping.sites = overlapping,
-                                        # non.overlapping.sites = non.overlapping,
-                                        fraction.overlap = frac.overlap)
-                         })
+                                        fraction.overlap = frac.overlap )
+                            }
+                          )
 
   frac.overlap <- do.call( rbind, frac.overlap )
 
+  frac.overlap <- data.frame( sample = sample.names,
+                              frac.overlap,
+                              condition = factor( conditions, levels = condition.levels ) )
+
   feature.counts <- lapply( X = hits,
                             FUN = function(x){
-                              # non.overlapping <- length( countSubjectHits(x)[ countSubjectHits(x) == 0 ] )
-                              # counts <- c( non.overlapping, countQueryHits(x) )
                               counts <- c( countQueryHits(x) )
-                              # ids <- c( "non.overlapping", mcols(features)[ , names( mcols(features)) %in% id.column ] )
-                              ids <- c( mcols(features)[ , names( mcols( features) ) %in% id.col ] )
+                              ids <- c( mcols( features )[ , names( mcols( features) ) %in% id.col ] )
                               ids <- ids[ order( match( ids, id.col ) ) ]
                               return( data.frame( ids, counts ) )
-                              } )
+                              }
+                            )
 
-  feature.counts <- Map( cbind, feature.counts, sample = names( feature.counts ) )
+  feature.counts <- Map( cbind, feature.counts, sample = sample.names )
 
   # Potential to-do: re-write the following to eliminate tidyverse functions. Maybe reshape + merge?
   count.mat <- as.matrix(
     do.call( rbind, c( feature.counts, make.row.names = FALSE ) ) |>
-      dplyr::arrange( sample ) |>
       tidyr::pivot_wider( names_from = sample, values_from = counts ) |>
       tibble::column_to_rownames(var = "ids")
     )
@@ -73,5 +101,10 @@ make_xInt_dataset <- function( site.list, features, min.overlap = 1, id.col = "n
                                     colData = frac.overlap,
                                     rowRanges = features )
 
-  return( xint.obj )
+  if( all( colnames( assay( xint.obj ) ) == rownames( colData( xint.obj ) ) ) ){
+    return( xint.obj )
+  } else{
+    stop( "Sample naming issue.",
+          call. = FALSE )
+  }
 }

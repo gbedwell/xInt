@@ -4,7 +4,15 @@
 \alias{make_xInt_dataset}
 \title{Make xInt Dataset}
 \usage{
-make_xInt_dataset(site.list, features, min.overlap = 1, id.col = "name")
+make_xInt_dataset(
+  site.list,
+  features,
+  sample.names = NULL,
+  conditions,
+  condition.levels,
+  min.overlap = 1,
+  id.col = "name"
+)
 }
 \arguments{
 \item{site.list}{The list of integration site datasets}

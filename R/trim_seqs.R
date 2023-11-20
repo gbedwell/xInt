@@ -11,12 +11,12 @@
 #'
 #'@export
 #'
-trim_seqs <- function( fragments, min.width = 40, max.distance = 1000, max.bp = 150 ){
+trim_seqs <- function( fragments, min.width = 14, max.distance = 1000, max.bp = 150 ){
   max.width <- max.distance + max.bp*2
   filtered <- fragments[ width( fragments ) >= min.width & width(fragments) <= max.width ]
-  left <- subseq( x = filtered, start=1, width = pmin( width( filtered ), 150 ) )
+  left <- subseq( x = filtered, start=1, width = pmin( width( filtered ), max.bp ) )
   right <- subseq(x = filtered,
-                  start = pmax( 1, width( filtered ) - 150 + 1 ), width = pmin( width( filtered ), 150 ) )
+                  start = pmax( 1, width( filtered ) - max.bp + 1 ), width = pmin( width( filtered ), max.bp ) )
   right <- reverseComplement( right )
   names( left ) <- paste0( "sequence_", seq_along( left ) )
   names( right ) <- paste0( "sequence_", seq_along( right ) )

@@ -20,8 +20,8 @@ Mstep.nbinom <- function(x, cond, pm, pn) {
     r = pm$size[i]
 
     if( r <= 0 ){
-      warning( "r <= 0, setting r = 1E-4", call. = FALSE )
-      r <- 1E-4
+      warning( "r <= 0, setting r = 1E-5", call. = FALSE )
+      r <- 1E-5
     }
 
     # function for calculating the gradient
@@ -47,7 +47,7 @@ Mstep.nbinom <- function(x, cond, pm, pn) {
       # Handle the error here (e.g., print a message or take alternative action)
       cat("An error occurred in uniroot: ", conditionMessage(e), "\n")
       # You can also expand the interval here if you want to retry with a wider range
-      o = uniroot(g, c(1E-4, 200), extendInt = "yes")
+      o = uniroot(g, c(r*1E-4, r*200), extendInt = "yes")
       size = c(size, o$root)
       mu = c(mu, A)
     })

@@ -4,7 +4,7 @@
 \alias{trim_seqs}
 \title{Trim Fragments}
 \usage{
-trim_seqs(fragments, min.width = 40, max.distance = 1000, max.bp = 150)
+trim_seqs(fragments, min.width = 14, max.distance = 1000, max.bp = 150)
 }
 \arguments{
 \item{fragments}{The fragments generated with BSgenome::getSeq().}

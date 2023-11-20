@@ -1,6 +1,6 @@
 #' Classic Proportion Comparisons
 #'
-#' Applies standard non-overdispered NHSTs to an xInt object. The reference group (e.g. wild-type) can be defined via the refcols (reference columns) argument. The function pplies all tests at once. Pairwise tests are run for all samples in the xInt object. Average tests are done for each column (data set) relative to the average of the reference columns (refcols). If reference columns are not specified, the average is taken across all columns. The pairwise tests applied are Fisher's exact test, chi-squared test, and G-test. The average tests are binomial and Poisson exact tests.
+#' Performs global pairwise comparisons on an xInt object using classic tests for equal proportions.
 #'
 #'@param xint.obj The xInt object containing the relevant data.
 #'@param comparison The extent of the pairwise comparisons. <code>all</code> will compare every dataset to all other datasets. <code>pooled</code> pools the information by condition and performs pairwise comparisons across conditions.
@@ -78,9 +78,9 @@ classic_prop_tests <- function( xint.obj, comparison = c( "all", "pooled" ), p.a
   if( any( pairwise[, 1:3 ] == 0 ) ){
     warning( "Some comparisons returned p = 0.",
              "\n",
-             paste0( "This is because the associated probability is < ", signif( .Machine$double.xmin, 4 ), ": the smallest non-zero normalized floating-point number." ),
+             paste0( "This is because the associated probability is < ", signif( .Machine$double.xmin, 4 ), ", the smallest non-zero normalized floating-point number." ),
              "\n",
-             paste0( "For practical purposes, reporting these p-values as e.g. < ", signif( .Machine$double.eps, 2 ), " is recommended." ),
+             paste0( "For practical purposes, reporting these p-values as e.g., < ", signif( .Machine$double.eps, 2 ), " is recommended." ),
              "\n" )
   }
 

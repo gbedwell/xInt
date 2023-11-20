@@ -1,4 +1,15 @@
-refine_coarse_mask <- function( coarse.mask, fragments, n.cores = 1 ){
+#' Refine Coarse Mask
+#'
+#' Refines a coarse genomic mask by identifying non-masked sub-regions within the coarsely masked regions via change point estimation. This is generally not intended to be run alone, but is called within mask_genome().
+#'
+#'@param coarse.mask The GRanges object containing the coarsely masked genomic regions.
+#'@param fragments The GRanges object containing the simulated random fragments/sites.
+#'@param win.size The window size used to bin the coarse masked regions. Defaults to 10.
+#'@param n.cores The number of cores to use in parallelization.
+#'
+#'@export
+#'
+refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores = 1 ){
 
   t1 <- Sys.time()
 
@@ -16,7 +27,7 @@ refine_coarse_mask <- function( coarse.mask, fragments, n.cores = 1 ){
                         tw <- lapply( X = 1:len,
                                       FUN = function(x){
                                         gr <- tile( x = coarse.mask[x],
-                                                    width = 10 )
+                                                    width = win.size )
                                         gr <- unlist( gr )
                                         mcols( gr )$region <- x
                                         return( gr )
@@ -42,29 +53,72 @@ refine_coarse_mask <- function( coarse.mask, fragments, n.cores = 1 ){
                                              "Trimming masked region", region,
                                              paste0( "of ", len, "..." ) )
 
-                                        toi <- tw[ mcols( tw )$region == x ]
-                                        coi <- mcols( toi )$count
+                                        toi <- unname( tw[ mcols( tw )$region == x ] )
+                                        coi <- unname( mcols( toi )$count )
 
-                                        cpt <- cpt.np( data = coi,
-                                                       minseglen = 1 )@cpts
+                                        chpt <- cpt.meanvar( data = coi,
+                                                             penalty = "MBIC",
+                                                             method = "PELT",
+                                                             test.stat = "Poisson",
+                                                             class = FALSE,
+                                                             minseglen = 1 )
 
-                                        cpt <- cpt[ cpt != length( toi ) ]
-
-                                        if( length( cpt ) == 0 ){
+                                        if( length( chpt ) == 1 && chpt == length( coi ) ){
                                           GRanges( seqnames = NULL,
                                                    ranges = NULL,
                                                    strand = NULL )
                                           } else{
-                                          cuts <- c( which( diff( cpt ) > 100 ), length( cpt ) )
-                                          inits <- c( 1, cuts + 1 )
-                                          inits <- inits[ inits <= length( cpt ) ]
 
-                                          a <- start( toi[ cpt[ inits ] ] )
-                                          b <- end( toi[ cpt[ cuts ] ] )
+                                            if( 1 %in% chpt ){
 
-                                          GRanges( seqnames = unique( seqnames( toi ) ),
-                                                   ranges = IRanges( start = a, end = b ),
-                                                   strand = "*" )
+                                              coi.grp <- cut( 1:length( coi ), breaks = chpt )
+                                              coi.splt <- split( coi, coi.grp )
+                                              coi.splt <- c( `(1,1]` = coi[1], coi.splt )
+
+                                            } else{
+
+                                              coi.grp <- cut( 1:length( coi ), breaks = c( 1, chpt ) )
+                                              coi.splt <- split( coi, coi.grp )
+                                              coi.splt[[1]] <- c( coi[1], coi.splt[[1]] )
+
+                                            }
+
+                                            coi.mean <- unlist(
+                                              lapply( X = coi.splt,
+                                                      FUN = function(x){
+                                                        mean(x)
+                                                        }
+                                                      )
+                                              )
+
+                                            regs <- lapply( X = names( coi.splt )[ which( coi.mean > 0.1 ) ],
+                                                            FUN = function(x){
+                                                              as.numeric(
+                                                                scan(
+                                                                  text = gsub( pattern = "\\(",
+                                                                               replacement = "",
+                                                                               x = gsub(
+                                                                                 pattern = "\\]",
+                                                                                 replacement = "",
+                                                                                 x = x ) ),
+                                                                  sep = ",",
+                                                                  quiet = TRUE )
+                                                                )
+                                                              }
+                                                            )
+
+                                            regs <- do.call( rbind, regs )
+
+                                            starts <- regs[,1]
+                                            stops <- regs[,2]
+
+                                            a <- start( toi[ starts ] )
+                                            b <- end( toi[ stops ] )
+
+                                            GRanges( seqnames = unique( seqnames( toi ) ),
+                                                     ranges = IRanges( start = a, end = b ),
+                                                     strand = "*" )
+
                                           }
                                         }
                                       )

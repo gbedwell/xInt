@@ -5,7 +5,8 @@
 #'@param aligned.fragments A GRanges object containing the coordinates of the genomic fragments extracted from the alignment BAM file.
 #'@param generated.fragments A GRanges object containing the coordinates of the genomic fragments generated via <code>make_fragments()</code>. These represent ground-truth fragments.
 #'@param genome.obj The BSgenome object for the target genome.
-#'@param win.size The tile size with which to bin the genome. Defaults to 100.
+#'@param coarse.win.size The initial tile size with which to bin the genome. Defaults to 100.
+#'@param refine.win.size The window size at which to refine the coarse mask.
 #'@param reltol The relative tolerance for convergence. Used in the Baum-Welch algorithm to fit HMM parameters. Corresponds to the absolute relative difference between iterations. Defaults to 1E-10.
 #'@param model The model to use in the EM algorithm. The options are <code>pois</code> and <code>nbinom</code>
 #'@param ignore.chromosomes Character vector of chromosome names to ignore. These are not included in the HMM, and should therefore be removed from downstream analyses that depend on the HMM.
@@ -20,9 +21,10 @@
 #'
 mask_genome <- function( aligned.fragments,
                          generated.fragments = NULL,
-                         verify.frags = TRUE,
+                         verify.frags = FALSE,
                          genome.obj,
-                         win.size = 100,
+                         coarse.win.size = 100,
+                         refine.win.size = 10,
                          reltol = 1E-12,
                          model = c( "pois", "nbinom" ),
                          ignore.chromosomes = NULL,
@@ -116,9 +118,9 @@ mask_genome <- function( aligned.fragments,
   lvls <- unique( seqnames( frags ) )
 
   sl <- seqlengths( genome.obj )[ lvls ]
-  tiles <- tileGenome( seqlengths = sl, tilewidth = win.size, cut.last.tile.in.chrom = TRUE )
+  tiles <- tileGenome( seqlengths = sl, tilewidth = coarse.win.size, cut.last.tile.in.chrom = TRUE )
   mcols( tiles )$name <- paste0( "tile_", 1:length( tiles ) )
-  ratio <- win.size / width( tiles )
+  ratio <- coarse.win.size / width( tiles )
 
   cat( "Counting tile overlaps...", "\n\n" )
 
@@ -227,7 +229,15 @@ mask_genome <- function( aligned.fragments,
 
   cat( "\n", "Refining coarse mask.", "Utilizing", n.cores, "cores...", "\n\n" )
 
-  trim <- refine_coarse_mask( coarse.mask = gr, fragments = frags, n.cores = n.cores )
+  if( ceiling( sum( sl ) / length( frags ) ) > refine.win.size ){
+    warning( "refine.win.size is too small given data depth.",
+             "\n",
+             paste0( "Using minimum allowable refine.win.size of ", ceiling( sum( sl ) / length( frags ) ), "." ),
+             call. = FALSE )
+    refine.win.size <- ceiling( sum( sl ) / length( frags ) )
+  }
+
+  trim <- refine_coarse_mask( coarse.mask = gr, fragments = frags, win.size = refine.win.size, n.cores = n.cores )
 
   cat( "Percent of each chromosome masked:", "\n" )
 

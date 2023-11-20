@@ -7,9 +7,10 @@
 mask_genome(
   aligned.fragments,
   generated.fragments = NULL,
-  verify.frags = TRUE,
+  verify.frags = FALSE,
   genome.obj,
-  win.size = 100,
+  coarse.win.size = 100,
+  refine.win.size = 10,
   reltol = 1e-12,
   model = c("pois", "nbinom"),
   ignore.chromosomes = NULL,
@@ -23,7 +24,9 @@ mask_genome(
 
 \item{genome.obj}{The BSgenome object for the target genome.}
 
-\item{win.size}{The tile size with which to bin the genome. Defaults to 100.}
+\item{coarse.win.size}{The initial tile size with which to bin the genome. Defaults to 100.}
+
+\item{refine.win.size}{The window size at which to refine the coarse mask.}
 
 \item{reltol}{The relative tolerance for convergence. Used in the Baum-Welch algorithm to fit HMM parameters. Corresponds to the absolute relative difference between iterations. Defaults to 1E-10.}
 
