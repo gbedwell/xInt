@@ -8,7 +8,8 @@ nb_random_counts(
   sites,
   mask,
   offset = 0,
-  genome.obj,
+  genome.obj = NULL,
+  features = NULL,
   size = 1e+06,
   win.size = 100
 )
@@ -18,7 +19,7 @@ nb_random_counts(
 
 \item{mask}{A GRanges object containing the masked regions of the genome (e.g. the output of mask_genome()).}
 
-\item{offset}{The nucleotide position of interest relative to the first nucleotide of the host sequence duplication. Defaults to 0, i.e. the first nucleotide of the duplication.}
+\item{offset}{The nucleotide position of interest relative to the first nucleotide of the target site duplication. Defaults to 0, i.e. the first nucleotide of the duplication. Only used when width of given sites is not 1.}
 
 \item{genome.obj}{The BSgenome object for the target genome.}
 

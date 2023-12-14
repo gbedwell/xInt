@@ -4,7 +4,7 @@
 \alias{assign_states}
 \title{Assign Initial States}
 \usage{
-assign_states(x, mix.mat = NULL, thresholds = NULL, n.states = NULL)
+assign_states(x, mix.mat = NULL, thresholds = NULL)
 }
 \arguments{
 \item{x}{The observed count vector.}
@@ -12,8 +12,6 @@ assign_states(x, mix.mat = NULL, thresholds = NULL, n.states = NULL)
 \item{mix.mat}{The parameter matrix output by fit_nb_mix() or fit_pois_mix().}
 
 \item{thresholds}{A vector of thresholds that define the different states. An alternative to supplying mix.mat.}
-
-\item{n.states}{The number of states in the model.}
 }
 \description{
 Initial HMM state assignments for a vector of counts based on defined thresholds. States are assigned such that the state above the highest threshold is State 1, the state above the next highest threshold is State 2, etc.

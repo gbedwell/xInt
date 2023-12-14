@@ -44,10 +44,8 @@ Mstep.nbinom <- function(x, cond, pm, pn) {
       size = c(size, o$root)
       mu = c(mu, A)
     }, error = function(e) {
-      # Handle the error here (e.g., print a message or take alternative action)
       cat("An error occurred in uniroot: ", conditionMessage(e), "\n")
-      # You can also expand the interval here if you want to retry with a wider range
-      o = uniroot(g, c(r*1E-4, r*200), extendInt = "yes")
+      o = uniroot(g, c(r*1E-3, r*190), extendInt = "yes")
       size = c(size, o$root)
       mu = c(mu, A)
     })

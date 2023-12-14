@@ -24,7 +24,7 @@ mask_genome <- function( aligned.fragments,
                          verify.frags = FALSE,
                          genome.obj,
                          coarse.win.size = 100,
-                         refine.win.size = 10,
+                         refine.win.size = 5,
                          reltol = 1E-12,
                          model = c( "pois", "nbinom" ),
                          ignore.chromosomes = NULL,
@@ -71,47 +71,10 @@ mask_genome <- function( aligned.fragments,
     frags <- aligned.fragments
   }
 
-  # cat( "Getting fragment positions...", "\n\n" )
-
-  # f.len <- length( frags )
-  # f.ind <- sort( sample( x = 1:f.len, size = ceiling( f.len / 2 ), replace = FALSE ) )
-  #
-  # five <- frags[ f.ind ]
-  # fp <- five[ strand( five ) == "+" ]
-  # start( fp ) <- start( fp )
-  # end( fp ) <- start( fp )
-  #
-  # fm <- five[ strand( five ) == "-" ]
-  # start( fm ) <- end( fm )
-  # end( fm ) <- start( fm )
-  #
-  # three <- frags[ -f.ind ]
-  # tp <- three[ strand( three ) == "+" ]
-  # start( tp ) <- start( tp )
-  # end( tp ) <- start( tp )
-  #
-  # tm <- three[ strand( three ) == "-" ]
-  # start( tm ) <- end( tm )
-  # end( tm ) <- start( tm )
-
-  # offset <- 0
-  #
-  # plus <- frags[ strand( frags ) == "+" ]
-  # start( plus ) <- start( plus )
-  # end( plus ) <- start( plus )
-  #
-  # minus <- frags[ strand( frags ) == "-" ]
-  # start( minus ) <- end( minus )
-  # end( minus ) <- start( minus )
-
   if( !isTRUE( is.unsorted( frags ) ) ){
     cat( "Sorting fragments...", "\n\n" )
     frags <- sort( frags, ignore.strand = TRUE )
   }
-
-  # frags <- sort( c( plus, minus ), ignore.strand = TRUE )
-
-  # frags <- sort( c( fp, fm, tp, tm ), ignore.strand = TRUE )
 
   cat( "Tiling genome...", "\n\n" )
 
@@ -153,10 +116,10 @@ mask_genome <- function( aligned.fragments,
                     cat( "Finding initial model parameters...", "\n\n" )
 
                     mmat <- switch( model,
-                                    "pois" = fit_pois_mix( x = counts, n.dists = n.states, size = 1E5 ),
-                                    "nbinom" = fit_nb_mix( x = counts, n.dists = n.states, size = 1E5 ) )
+                                    "pois" = fit_pois_mix( x = counts, size = 1E5 ),
+                                    "nbinom" = fit_nb_mix( x = counts, size = 1E5 ) )
                     states <- assign_states( x = counts, mix.mat = mmat )
-                    tmat <- estimate_trans_mat( x = states, n.states = n.states )
+                    tmat <- estimate_trans_mat( x = states )
 
                     cat( "Training HMM...", "\n\n" )
 

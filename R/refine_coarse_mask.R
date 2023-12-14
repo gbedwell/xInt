@@ -9,7 +9,7 @@
 #'
 #'@export
 #'
-refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores = 1 ){
+refine_coarse_mask <- function( coarse.mask, fragments, win.size = 5, n.cores = 1 ){
 
   t1 <- Sys.time()
 
@@ -26,7 +26,7 @@ refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores =
 
                         tw <- lapply( X = 1:len,
                                       FUN = function(x){
-                                        gr <- tile( x = coarse.mask[x],
+                                        gr <- tile( x = wt[x],
                                                     width = win.size )
                                         gr <- unlist( gr )
                                         mcols( gr )$region <- x
@@ -34,7 +34,7 @@ refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores =
                                         }
                                       )
 
-                        tw <- do.call( c, tw )
+                        tw <- unname( do.call( c, tw ) )
 
                         tw.counts <- countOverlaps( query = tw,
                                                     subject = f,
@@ -45,11 +45,12 @@ refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores =
                         mcols( tw )$count <- tw.counts
 
                         tw <- lapply( X = unique( mcols( tw )$region ),
-                                      FUN = function(x){
+                                      FUN = function(x) {
 
                                         region <<- x
+
                                         cat( "\r\033[K",
-                                             paste0( "Chromosome ", s, ": "),
+                                             paste0( "Chromosome ", s, ": " ),
                                              "Trimming masked region", region,
                                              paste0( "of ", len, "..." ) )
 
@@ -63,54 +64,75 @@ refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores =
                                                              class = FALSE,
                                                              minseglen = 1 )
 
-                                        if( length( chpt ) == 1 && chpt == length( coi ) ){
-                                          GRanges( seqnames = NULL,
-                                                   ranges = NULL,
-                                                   strand = NULL )
-                                          } else{
+                                        if ( length( chpt ) == 1 && chpt == length( coi ) ) {
 
-                                            if( 1 %in% chpt ){
+                                          tmp.frac <- length( coi[ coi != 0 ] ) / length( coi )
 
-                                              coi.grp <- cut( 1:length( coi ), breaks = chpt )
-                                              coi.splt <- split( coi, coi.grp )
-                                              coi.splt <- c( `(1,1]` = coi[1], coi.splt )
+                                          if( mean( coi ) > 0.2 &&  tmp.frac > 0.2 ){
+
+                                            a <- start( toi[ 1 ] )
+                                            b <- end( toi[ length( coi ) ] )
+
+                                            GRanges( seqnames = unique( seqnames( toi ) ),
+                                                     ranges = IRanges( start = a, end = b ),
+                                                     strand = "*" )
 
                                             } else{
 
-                                              coi.grp <- cut( 1:length( coi ), breaks = c( 1, chpt ) )
-                                              coi.splt <- split( coi, coi.grp )
-                                              coi.splt[[1]] <- c( coi[1], coi.splt[[1]] )
+                                            GRanges( seqnames = NULL,
+                                                     ranges = NULL,
+                                                     strand = NULL )
+
+                                              }
+                                          } else {
+
+                                          coi.mat <- matrix(nrow = length(chpt), ncol = 2)
+
+                                          for ( i in 1:length( chpt ) ) {
+                                            if ( i == 1 ) {
+
+                                              coi.mat[i, 1] <- 1
+                                              coi.mat[i, 2] <- chpt[i]
+
+                                            } else {
+
+                                              coi.mat[i, 1] <- chpt[i - 1] + 1
+                                              coi.mat[i, 2] <- chpt[i]
 
                                             }
+                                          }
 
-                                            coi.mean <- unlist(
-                                              lapply( X = coi.splt,
-                                                      FUN = function(x){
-                                                        mean(x)
-                                                        }
-                                                      )
-                                              )
+                                          coi.mean <- apply( X = coi.mat,
+                                                             MARGIN = 1,
+                                                             FUN = function(x) {
+                                                               mean( coi[x[1]:x[2]] )
+                                                               }
+                                                             )
 
-                                            regs <- lapply( X = names( coi.splt )[ which( coi.mean > 0.1 ) ],
-                                                            FUN = function(x){
-                                                              as.numeric(
-                                                                scan(
-                                                                  text = gsub( pattern = "\\(",
-                                                                               replacement = "",
-                                                                               x = gsub(
-                                                                                 pattern = "\\]",
-                                                                                 replacement = "",
-                                                                                 x = x ) ),
-                                                                  sep = ",",
-                                                                  quiet = TRUE )
-                                                                )
-                                                              }
-                                                            )
+                                          coi.frac <- apply( X = coi.mat,
+                                                             MARGIN = 1,
+                                                             FUN = function(x) {
+                                                               v <- coi[ x[1]:x[2] ]
+                                                               length( v[ v != 0 ]) / length(v)
+                                                               }
+                                                             )
 
-                                            regs <- do.call( rbind, regs )
+                                          regs <- coi.mat[ which( coi.mean > 0.2 & coi.frac > 0.2 ), ]
 
-                                            starts <- regs[,1]
-                                            stops <- regs[,2]
+                                          if( !is.matrix( regs ) ){
+                                            regs <- matrix( regs, ncol = 2 )
+                                          }
+
+                                          if( length( regs ) == 0 ){
+
+                                            GRanges( seqnames = NULL,
+                                                     ranges = NULL,
+                                                     strand = NULL )
+
+                                          } else{
+
+                                            starts <- regs[, 1]
+                                            stops <- regs[, 2]
 
                                             a <- start( toi[ starts ] )
                                             b <- end( toi[ stops ] )
@@ -118,10 +140,10 @@ refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores =
                                             GRanges( seqnames = unique( seqnames( toi ) ),
                                                      ranges = IRanges( start = a, end = b ),
                                                      strand = "*" )
-
                                           }
                                         }
-                                      )
+                                      }
+                                    )
 
                         tw <- do.call( c, tw )
 
@@ -135,6 +157,8 @@ refine_coarse_mask <- function( coarse.mask, fragments, win.size = 10, n.cores =
                         mc.cores = n.cores )
 
   mtargs <- do.call( c, mtargs )
+
+  mtargs <- reduce( x = mtargs, ignore.strand = TRUE )
 
   cat( "\n", "Subtracting targeted regions from coarse mask...", "\n\n" )
 

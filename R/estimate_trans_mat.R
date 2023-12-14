@@ -3,15 +3,16 @@
 #' Generate the initial estimate of the transition matrix for a hidden Markov model. The estimated vector of states can be generated with assign_states().
 #'
 #'@param x The estimated vector of states.
-#'@param n.states The number of states in the model.
 #'
 #'
 #'@export
 #'
-estimate_trans_mat <- function( x, n.states ) {
+estimate_trans_mat <- function( x ) {
   # Estimates transition probabilities and creates a transition matrix for HMMs
   # Uses the states assigned in assign_states().
   # Generates reasonable starting values for the Baum-Welch algorithm.
+
+  n.states <- 2
 
   # Enumerate the transitions present in the vector of states
   transpairs <- cbind( x[ -length( x ) ], x[ -1 ] )

@@ -4,12 +4,10 @@
 \alias{estimate_trans_mat}
 \title{Estimate Transition Matrix}
 \usage{
-estimate_trans_mat(x, n.states)
+estimate_trans_mat(x)
 }
 \arguments{
 \item{x}{The estimated vector of states.}
-
-\item{n.states}{The number of states in the model.}
 }
 \description{
 Generate the initial estimate of the transition matrix for a hidden Markov model. The estimated vector of states can be generated with assign_states().

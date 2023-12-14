@@ -3,21 +3,18 @@
 #' Fits a Poisson mixture model to a vector of counts. Parameters are estimated by MLE. Generates initial mean estimates and mixing probabilities by k-means clustering. Returns an n x 2 matrix, where n is the number of distributions, column 1 holds the mixing proportions and column 2 holds the distribution means. The distribution with the highest mean value is returned in returned in row 1. The distribution with the smallest mean value is returned in row n.
 #'
 #'@param x The observed counts
-#'@param n.dists The number of distributions in the mixture model.
-#'@param sites The number of counts to sample from x.
+#'@param size The number of counts to sample from x.
 #'
 #'@export
 #'
-fit_pois_mix <- function( x, n.dists = 2, size = 1E5 ) {
+fit_pois_mix <- function( x, size = 1E5 ) {
   # Given a vector of counts, fit the distribution to a Poisson mixture distribution.
   # Generates initial mean and mixing probability estimates via k-means clustering.
   # Sorts final fitted values by decreasing mean values.
   # i.e. the largest mean is defined as state 1, second largest is defined as state 2, etc.
   # The output is used to assign states in assign_states().
 
-  if ( n.dists < 2 ) {
-    stop( "n.dists must be >= 2." )
-    }
+  n.dists <- 2
 
   # Define the negative log likelihood function
   nll <- function( params, x ) {
@@ -42,25 +39,28 @@ fit_pois_mix <- function( x, n.dists = 2, size = 1E5 ) {
     return( calc.nll )
   }
 
-  max.tries <- 10
+  max.tries <- 5
   tries <- 1
 
   while( tries <= max.tries ){
     tries <- tries + 1
 
     if ( length( x ) > size ){
-      x <- sample( x = x, size = size, replace = FALSE )
+      samp <- sample( x = x, size = size, replace = FALSE )
     }
 
-    # Generate initial parameter estimates using k-means clustering
-    k <- kmeans( x, centers = n.dists )
-    lambdas.init <- sort( k$centers )
-    denom <- pmax( 1, 10^floor( log10( lambdas.init[1] ) ) )
-    lambdas.init <- c( lambdas.init[1] / denom, lambdas.init[-1] )
-    mps.init <- k$size / sum( k$size )
+    dens <- stats::density( x = samp,
+                            from = 0,
+                            to = max( samp ),
+                            n = length( 0:max( samp ) ) )$y
 
-    # Generate random starting point for ps
-    # ps_init <- runif(n.dists)
+    inf.pt <- which( diff( sign( diff( dens ) ) ) == 2 ) + 1
+
+    p1 <- samp[ which( samp >= inf.pt[1] ) ]
+    p2 <- samp[ which( samp < inf.pt[1] ) ]
+
+    lambdas.init <- c( mean( p1 ), mean( p2 ) )
+    mps.init <- c( ( length( p1 ) / length( samp ) ), ( length( p2 ) / length( samp ) ) )
 
     # Combine lambdas and mps to create the initial parameter vector
     init.params <- c( lambdas.init, mps.init )
@@ -74,7 +74,7 @@ fit_pois_mix <- function( x, n.dists = 2, size = 1E5 ) {
           method = "L-BFGS-B",
           lower = c( rep( 0, n.dists ), rep( 0, n.dists ) ),
           upper = c( rep( Inf, n.dists ), rep( 1, n.dists ) ),
-          x = x
+          x = samp
           )
         },
       error = function( e ) {
@@ -91,7 +91,9 @@ fit_pois_mix <- function( x, n.dists = 2, size = 1E5 ) {
   }
 
   if (tries > max.tries) {
-    stop( cat( "Optimization failed after", max.tries, "attempts.", "\n\n" ) )
+    warning( "Optimization failed after ", max.tries, " attempts.", "\n",
+             "Using initial parameter estimates instead.", "\n\n" )
+    optimized.params <- init.params
   }
 
   # Extract the optimized parameters

@@ -4,7 +4,7 @@
 \alias{refine_coarse_mask}
 \title{Refine Coarse Mask}
 \usage{
-refine_coarse_mask(coarse.mask, fragments, win.size = 10, n.cores = 1)
+refine_coarse_mask(coarse.mask, fragments, win.size = 5, n.cores = 1)
 }
 \arguments{
 \item{coarse.mask}{The GRanges object containing the coarsely masked genomic regions.}

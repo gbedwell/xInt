@@ -10,7 +10,7 @@ mask_genome(
   verify.frags = FALSE,
   genome.obj,
   coarse.win.size = 100,
-  refine.win.size = 10,
+  refine.win.size = 5,
   reltol = 1e-12,
   model = c("pois", "nbinom"),
   ignore.chromosomes = NULL,

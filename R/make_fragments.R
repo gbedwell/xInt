@@ -65,7 +65,7 @@ make_fragments <- function( insert.sites,
     unmatched.frags <- do.call( c, list( unmatched.pos, unmatched.neg ) )
 
     frag.ranges <- do.call( c, list( frag.ranges, unmatched.frags ) )
-    }
+  }
 
   else {
     lnorm.loc <- log( mean^2 / sqrt( sd^2 + mean^2 ) )

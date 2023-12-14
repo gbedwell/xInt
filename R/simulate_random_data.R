@@ -75,7 +75,7 @@ simulate_random_data <- function( genome.obj,
 
                        cat( "Getting fragment ranges...", "\n\n" )
 
-                       rand.fragments <- make_fragments( int.sites = rand.sites,
+                       rand.fragments <- make_fragments( insert.sites = rand.sites,
                                                          frag.sites = re.cuts,
                                                          random = random,
                                                          genome.obj = genome.obj,
