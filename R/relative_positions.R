@@ -1,4 +1,7 @@
-relative_positions <- function( site.list, features, names = NULL, metadata = NULL ){
+relative_positions <- function( site.list,
+                                features,
+                                names = NULL,
+                                metadata = NULL ){
 
   pos.ll <- lapply( X = site.list,
                     FUN = function(z){
@@ -29,10 +32,10 @@ relative_positions <- function( site.list, features, names = NULL, metadata = NU
 
 
                       df <- data.frame( site = start( ranges( ol.sites ) ),
-                                        start = start( ranges( ol.feats ) ),
-                                        end = end( ranges( ol.feats ) ) )
+                                        feature.start = start( ranges( ol.feats ) ),
+                                        feature.end = end( ranges( ol.feats ) ) )
 
-                      df$rel.position <- ( df$site - df$start ) / ( df$end - df$start )
+                      df$rel.position <- ( df$site - df$feature.start ) / ( df$feature.end - df$feature.start )
 
                       if( !is.null( metadata ) ){
                         md <- mcols( ol.feats )[ names( mcols( features ) ) == metadata ]

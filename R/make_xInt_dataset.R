@@ -56,15 +56,26 @@ make_xInt_dataset <- function( site.list,
   frac.overlap <- lapply( X = hits,
                           FUN = function(x){
                             total.sites <- length( countSubjectHits(x) )
-                            overlapping <- length( countSubjectHits(x)[ countSubjectHits(x) != 0 ] )
+                            # overlapping <- length( countSubjectHits(x)[ countSubjectHits(x) != 0 ] )
+                            overlapping <- length( unique( subjectHits(x) ) )
                             frac.overlap <- overlapping/total.sites
                             multioverlap <- length( countSubjectHits(x)[ countSubjectHits(x) > 1 ] )
                             if ( multioverlap != 0 ){
-                               warning( cat( "Sites overlapping multiple features are present in the data.",
-                                             "\n",
-                                             "Use 'collapse_features()' to combined overlapping feature ranges if assessment of total feature integration is desired.",
-                                             call. = FALSE )
-                               )
+
+                               warning( "Sites overlapping multiple features are present in the data.",
+                                        "\n",
+                                        "The summarized sample (column) data will not be affected.",
+                                        "\n",
+                                        call. = FALSE )
+
+                              ol.check <- length( countSubjectHits(x)[ countSubjectHits(x) != 0 ] ) == overlapping
+
+                              if( !isTRUE( ol.check ) ){
+
+                                stop( "Error in counting feature overlaps.",
+                                      call. = FALSE )
+
+                                }
                               }
 
                             data.frame( total.sites = total.sites,
@@ -83,14 +94,13 @@ make_xInt_dataset <- function( site.list,
                             FUN = function(x){
                               counts <- c( countQueryHits(x) )
                               ids <- c( mcols( features )[ , names( mcols( features) ) %in% id.col ] )
-                              ids <- ids[ order( match( ids, id.col ) ) ]
+                              ids <- make.unique( ids, sep = ".dup" )
                               return( data.frame( ids, counts ) )
                               }
                             )
 
   feature.counts <- Map( cbind, feature.counts, sample = sample.names )
 
-  # Potential to-do: re-write the following to eliminate tidyverse functions. Maybe reshape + merge?
   count.mat <- as.matrix(
     do.call( rbind, c( feature.counts, make.row.names = FALSE ) ) |>
       tidyr::pivot_wider( names_from = sample, values_from = counts ) |>
@@ -103,7 +113,7 @@ make_xInt_dataset <- function( site.list,
 
   if( all( colnames( assay( xint.obj ) ) == rownames( colData( xint.obj ) ) ) ){
     return( xint.obj )
-  } else{
+    } else{
     stop( "Sample naming issue.",
           call. = FALSE )
   }

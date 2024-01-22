@@ -19,8 +19,6 @@
 #'@export
 #'
 mask_genome <- function( aligned.fragments,
-                         generated.fragments = NULL,
-                         verify.frags = FALSE,
                          genome.obj,
                          coarse.win.size = 100,
                          reltol = 1E-12,
@@ -30,53 +28,56 @@ mask_genome <- function( aligned.fragments,
 
   n.states <- 2
 
-  if( isTRUE( verify.frags ) && is.null( generated.fragments ) ){
-    stop( "generated.fragments cannot be NULL when verify.frags = TRUE.",
-          call. = FALSE )
+  if( is( aligned.fragments, "list" ) || is( aligned.fragments, "GRangesList" ) ){
+    frags <- aligned.fragments
+  } else{
+    if( is( aligned.fragments, "GRanges" ) ){
+      frags <- list( aligned.fragments )
+    } else{
+      stop( "aligned.fragments must be a list of GRanges objects, a GRangesList, or a GRanges object.",
+            call. = FALSE )
+    }
   }
-
-  cat( "\n" )
 
   cat( "Filtering chromosomes...", "\n\n" )
 
-  og.len <- length( aligned.fragments )
-
-  if ( !is.null( ignore.chromosomes ) ){
-    aligned.fragments <- aligned.fragments[ !seqnames( aligned.fragments ) %in% ignore.chromosomes ]
+  if( !is.null( ignore.chromosomes ) ){
+    frags <- lapply( X = 1:length( frags ),
+                     FUN = function(x) {
+                       tmp <- frags[[x]]
+                       og.len <- length( tmp )
+                       tmp <- tmp[ !seqnames( tmp ) %in% ignore.chromosomes ]
+                       new.len <- length( tmp )
+                       cat( "Object", paste0( x, "/", length( frags ), ":" ),
+                            "Filtered", og.len - new.len, "fragments out of", og.len, "original fragments",
+                            paste0( "(",
+                                    round( ( ( og.len - new.len ) / og.len ) * 100, 3 ), "%)."
+                            ), "\n" )
+                       return( tmp )
+                       }
+                     )
+    cat( "\n\n" )
   }
 
-  new.len <- length( aligned.fragments )
+  cat( "Sorting fragments...", "\n\n" )
 
-  cat( "Filtered", og.len - new.len, "fragments out of", og.len, "original fragments",
-       paste0( "(",
-               round( ( ( og.len - new.len ) / og.len ) * 100, 3 ), "%)."
-       ), "\n\n" )
-
-  if( isTRUE( verify.frags ) ){
-    cat( "Verifying fragments...", "\n\n" )
-
-    frags <- verify_aligned_fragments( generated.fragments = generated.fragments,
-                                       aligned.fragments = aligned.fragments )
-
-    cat( "Keeping", length( frags ), "fragments out of",
-         length( aligned.fragments ), "aligned fragments",
-         paste0( "(",
-                 round( ( length( frags ) / length( aligned.fragments ) ) * 100, 3 ), "%)."
-         ),
-         "\n\n" )
-
-  } else{
-    frags <- aligned.fragments
-  }
-
-  if( !isTRUE( is.unsorted( frags ) ) ){
-    cat( "Sorting fragments...", "\n\n" )
-    frags <- sort( frags, ignore.strand = TRUE )
-  }
+  frags <- lapply( X = frags,
+                   FUN = function(x){
+                     if( isTRUE( is.unsorted( x ) ) ){
+                       sort( x, ignore.strand = TRUE )
+                       }
+                     }
+                   )
 
   cat( "Tiling genome...", "\n\n" )
 
-  lvls <- unique( seqnames( frags ) )
+  sn <- lapply( X = frags,
+                FUN = function(x){
+                  unique( seqnames( x ) )
+                  }
+                )
+
+  lvls <- unique( as.character( do.call( c, sn ) ) )
 
   sl <- seqlengths( genome.obj )[ lvls ]
   tiles <- tileGenome( seqlengths = sl, tilewidth = coarse.win.size, cut.last.tile.in.chrom = TRUE )
@@ -85,12 +86,17 @@ mask_genome <- function( aligned.fragments,
 
   cat( "Counting tile overlaps...", "\n\n" )
 
-  counts <- countOverlaps( query = tiles,
-                           subject = frags,
-                           minoverlap = 1,
-                           type = "any",
-                           ignore.strand = TRUE )
+  counts <- lapply( X = frags,
+                    FUN = function(x){
+                      tmp <- countOverlaps( query = tiles,
+                                            subject = x,
+                                            minoverlap = 1,
+                                            type = "any",
+                                            ignore.strand = TRUE )
+                      }
+                    )
 
+  counts <- rowSums( do.call( cbind, counts ) )
   corr.counts <- round( counts * ratio )
   mcols( tiles )$count <- counts
   mcols( tiles )$corr.count <- corr.counts
@@ -180,15 +186,20 @@ mask_genome <- function( aligned.fragments,
 
   cat( "\n", "Refining coarse mask.", "Utilizing", n.cores, "cores...", "\n\n" )
 
-  # if( ceiling( sum( sl ) / length( frags ) ) > refine.win.size ){
-  #   warning( "refine.win.size is too small given data depth.",
-  #            "\n",
-  #            paste0( "Using minimum allowable refine.win.size of ", ceiling( sum( sl ) / length( frags ) ), "." ),
-  #            call. = FALSE )
-  #   refine.win.size <- ceiling( sum( sl ) / length( frags ) )
-  # }
+  cm.frags <- lapply( X = frags,
+                      FUN = function(x){
+                        hits <- findOverlaps(query = gr,
+                                             subject = x,
+                                             minoverlap = 1L,
+                                             type="any")
+                        hits <- subjectHits( hits )
+                        x[hits]
+                        }
+                      )
 
-  trim <- refine_coarse_mask( coarse.mask = gr, fragments = frags, n.cores = n.cores )
+  cm.frags <- sort( unlist( as( cm.frags, "GRangesList" ) ), ignore.strand = TRUE )
+
+  trim <- refine_coarse_mask( coarse.mask = gr, fragments = cm.frags, n.cores = n.cores )
 
   cat( "Percent of each chromosome masked:", "\n" )
 
