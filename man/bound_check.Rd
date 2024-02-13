@@ -4,7 +4,7 @@
 \alias{bound_check}
 \title{Genome Boundary Check}
 \usage{
-bound_check(fragments, genome.obj)
+bound_check(fragments, genome.obj, include.lower = FALSE)
 }
 \arguments{
 \item{fragments}{The random fragments being tested.}

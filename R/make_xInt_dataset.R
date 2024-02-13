@@ -23,7 +23,7 @@ make_xInt_dataset <- function( site.list,
                                id.col = "name" ){
 
   if( is.null( sample.names ) ){
-    sample.names <- names( sites.list )
+    sample.names <- names( site.list )
     if( is.null( sample.names ) ){
       stop( "Sample names must be provided or the elements in site.list must be named.",
             call. = FALSE )

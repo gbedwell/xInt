@@ -15,7 +15,7 @@
 #'@param n.cores The number of cores to use. Enables parallelization.
 #'@param write.ranges Logical. Whether or not to write out the coordinates of the generated random fragments. Defaults to FALSE.
 #'@param directory.path The parent directory path.
-#'@param compress Boolean. Whether or not to compress the output FASTQ files. Defaults to TRUE.
+#'@param compress Boolean. Whether or not to compress the output FASTA files. Defaults to TRUE.
 #'@param collapse Boolean. Whether or not to collapse the generated fragments for each iteration into a single object. Defaults to TRUE.
 #'
 #'@import BSgenome

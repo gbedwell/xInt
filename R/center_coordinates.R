@@ -1,9 +1,20 @@
-center_coordinates <- function( site.list, current = 3, tsd = 5, genome.obj ){
+#' Center Coordinates
+#'
+#' Centers the input site coordinates relative to the defined target site duplication. In the instance of odd TSDs, returns a 1 bp interval. For even TSDs, a 2 bp interval is returned.
+#'
+#'@param site.list The list or GRangesList containing the mapped site coordinates.
+#'@param current.start The position in the target site duplication currently described by start. This is used for centering the site coordinates.
+#'@param tsd The total length of the target site duplication. This is used for centering the site coordinates.
+#'@param genome.obj The genome object of interest.
+#'
+#'@export
+#'
+center_coordinates <- function( site.list, current.start = 3, tsd = 5, genome.obj ){
 
   ll <- lapply( X = site.list,
                 FUN = function(x){
                   center <- ( tsd + 1 ) / 2
-                  diff <- center - current
+                  diff <- center - current.start
                   a <- floor( diff )
                   b <- ceiling( diff )
 
@@ -17,25 +28,19 @@ center_coordinates <- function( site.list, current = 3, tsd = 5, genome.obj ){
 
                   centered <- sort( c( plus, minus ), ignore.strand = TRUE )
 
-                  sn <- as.character( seqnames( centered ) )
-                  sl <- seqlengths( genome.obj )
+                  outs <- bound_check( fragments = centered,
+                                       genome.obj = genome.obj,
+                                       include.lower = TRUE )
 
-                  if( any( end( centered ) > ( sl[ sn ] - ceiling( center ) ) ) ||
-                      any( start( centered ) < floor( center ) ) ){
+                  if( length(outs) != 0 ){
 
-                    warning( "1 or more centered coordinates are out of bounds. ",
-                             "Returning the problematic ranges." )
+                    warning( "Centered coordinates " , paste(outs, collapse=", "),
+                             " are out of bounds. These coordinates will be removed.",
+                             call. = FALSE )
 
-                    problems <- c( centered[ which( end( centered ) > ( sl[ sn ] - ceiling( center ) ) ) ],
-                                   centered[ which( start( centered ) < floor( center ) ) ] )
-
-                    problems <- sort( problems, ignore.strand = TRUE )
-
-                    } else{
-
-                    return( centered )
-
+                    centered <- centered[-outs]
                     }
+                  return( centered )
                   }
                 )
 

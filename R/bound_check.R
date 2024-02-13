@@ -18,8 +18,12 @@
 #'
 #'@export
 #'
-bound_check <- function( fragments, genome.obj ){
+bound_check <- function( fragments, genome.obj, include.lower = FALSE ){
   frag.seqnames <- as.character( GenomicRanges::seqnames( fragments ) )
   genome.seqlengths <- GenomeInfoDb::seqlengths( genome.obj )
-  which( GenomicRanges::end( fragments ) > genome.seqlengths[ c( frag.seqnames ) ] )
+  if( include.lower ){
+    which( GenomicRanges::end( fragments ) > genome.seqlengths[ c( frag.seqnames ) ] | start( fragments ) < 1 )
+  } else{
+    which( GenomicRanges::end( fragments ) > genome.seqlengths[ c( frag.seqnames ) ] )
+  }
 }

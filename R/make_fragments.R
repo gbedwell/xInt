@@ -88,7 +88,8 @@ make_fragments <- function( insert.sites,
     frag.ranges <- do.call( c, list( plus.sites, minus.sites ) )
 
     outliers <- bound_check( fragments = frag.ranges,
-                             genome.obj = genome.obj )
+                             genome.obj = genome.obj,
+                             include.lower = FALSE )
 
     if( length( outliers ) != 0 ){
       extreme.frags <- frag.ranges[ outliers ]

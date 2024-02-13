@@ -1,7 +1,18 @@
+#' Meta-feature Analysis
+#'
+#' Calculates the relative positions of each site along the features-of-interest. Can return the relative positions for each site in each dataset, or the number of sites within defined bins along the features.
+#'
+#'@param site.list The list or GRangesList containing the mapped site coordinates.
+#'@param features The features-of-interest. Must be a GRanges object.
+#'@param metadata The names of metadata columns to keep. Only works when <code>bins=NULL</code>. That is, when the relative positions of every site is returned.
+#'@param bins The number of bins to generate across the features. Defaults to NULL (i.e., the relative position of every site is returned).
+#'
+#'@export
+#'
 relative_positions <- function( site.list,
                                 features,
-                                names = NULL,
-                                metadata = NULL ){
+                                metadata = NULL,
+                                bins = NULL ){
 
   pos.ll <- lapply( X = site.list,
                     FUN = function(z){
@@ -46,17 +57,25 @@ relative_positions <- function( site.list,
                       }
                     )
 
-  if( is.null( names ) ){
-    names( pos.ll ) <- names( site.list )
-  } else{
-    if( length( names ) != length( pos.ll ) ){
-      stop( "Length of 'names' != length of 'site.list'.",
-            "\n",
-            "Verify that the provided names are correct." )
-      } else{
-        names( pos.ll ) <- names
-      }
-    }
+  if( !is.null( bins ) ){
+    b <- seq(0, 1, length.out = bins + 1 )
 
-  return( pos.ll )
+    pos.bin <- lapply( X = pos.ll,
+                       FUN = function(x){
+                         v <- x$rel.position
+                         tt <- table(cut(v, breaks = b, include.lowest = TRUE))
+                         percentiles <- b
+                         percentiles <- percentiles[ percentiles != 0 ] * 100
+                         dat <- data.frame( percentiles = percentiles )
+                         dat <- cbind( dat, data.frame( tt ) )
+                         dat <- dat[,c(1,3)]
+                         colnames(dat) <- c( "percentile", "frequency" )
+                         dat$fraction <- dat$frequency / sum( dat$frequency )
+                         return(dat)
+                         }
+      )
+    return( pos.bin )
+    } else{
+      return( pos.ll )
+    }
 }

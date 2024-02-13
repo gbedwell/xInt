@@ -11,7 +11,7 @@ simulate_random_data(
   n.sites,
   mean,
   sd,
-  min.width = 40,
+  min.width = 14,
   max.distance = 1000,
   max.bp = 150,
   iterations = 1,
@@ -50,7 +50,7 @@ simulate_random_data(
 
 \item{directory.path}{The parent directory path.}
 
-\item{compress}{Boolean. Whether or not to compress the output FASTQ files. Defaults to TRUE.}
+\item{compress}{Boolean. Whether or not to compress the output FASTA files. Defaults to TRUE.}
 
 \item{collapse}{Boolean. Whether or not to collapse the generated fragments for each iteration into a single object. Defaults to TRUE.}
 }
