@@ -21,19 +21,18 @@ expand_coordinates <- function( site.list, seq.len = 50, genome.obj, current.sta
 
   ex <- lapply( X = cc,
                 FUN = function(x){
-                  # # Anchors the expanded sequence on the central coordinate
-                  # # The effect of this is to shorten seq.len by 1 when the central base is integer-valued (tsd is odd).
-                  # # This is different from GenomicRanges::resize(), which will add 1 more base to left side of odd-width coordinates.
-                  # start(x) <- start(x) - ((seq.len / 2) - 1)
-                  # end(x) <- end(x) + ((seq.len / 2) - 1)
-                  rs <- resize( x, width = seq.len, fix = "center", ignore.strand = TRUE )
-                  outs <- bound_check( fragments = rs,
+                  # Anchors the expanded sequence on the central coordinate
+                  # The effect of this is to shorten seq.len by 1 when the central base is integer-valued (tsd is odd).
+                  # This is different from GenomicRanges::resize(), which will add 1 more base to left side of odd-width coordinates.
+                  start(x) <- start(x) - ((seq.len / 2) - 1)
+                  end(x) <- end(x) + ((seq.len / 2) - 1)
+                  outs <- bound_check( fragments = x,
                                        genome.obj = genome.obj,
                                        include.lower = TRUE )
                   if( length(outs) != 0 ){
-                    return(rs[-outs])
+                    return(x[-outs])
                   } else{
-                    return(rs)
+                    return(x)
                   }
                 }
   )

@@ -42,10 +42,10 @@ make_logo <- function( site.list, seq.len = 50, genome.obj, current.start = 3, t
 
     if( tsd %% 2 == 1 ){
       mp <- ( seq.len / 2 ) + 1
-      zp <- mp - ( center - 1 )
+      zp <- mp - ( center )
     } else{
       mp <- seq.len / 2
-      zp <- mp - ( floor(center) - 1 )
+      zp <- mp - ( floor(center) )
     }
 
     p.labs <- seq( 1:seq.len ) - zp

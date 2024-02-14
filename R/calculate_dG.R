@@ -60,10 +60,10 @@ calculate_dG <- function( site.list, step.len = 50, genome.obj, current.start = 
 
                   if( tsd %% 2 == 1 ){
                     mp <- ( length(out) / 2 ) + 1
-                    zp <- mp - ( center - 1 )
+                    zp <- mp - ( center )
                   } else{
                     mp <- length(out) / 2
-                    zp <- mp - ( floor(center) - 1 )
+                    zp <- mp - ( floor(center) )
                   }
 
                   dat <- data.frame( position = seq( 1:length(out) ) - zp, dG = out )
