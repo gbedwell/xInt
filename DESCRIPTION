@@ -1,0 +1,21 @@
+Package: xInt
+Title: Comprehensive Analysis of Genomic Integration Site Data
+Version: 0.99.0
+Authors@R: 
+    person(
+      "Gregory", "Bedwell",
+      email = "gregoryjbedwell@gmail.com", 
+      role = c("aut", "cre", "cph"),
+      comment = c(ORCID = "0000-0003-0456-0032") )
+Depends: limma, SummarizedExperiment, GenomicRanges
+Imports: S4Vectors, IRanges, GenomeInfoDb, Biostrings, rtracklayer, Rsamtools, GenomicAlignments, GenomicFiles, ggseqlogo, changepoint, parallel, tidyr, tibble, dplyr, edgeR, stats, methods, utils, ggplot2
+Suggests: BiocStyle, knitr, rmarkdown, BSgenome.Hsapiens.UCSC.hs1
+VignetteBuilder: knitr
+Description: 
+  xInt is a package for the analysis of genomic integration site data. Functionalities are provided for the efficient calculation of local and global feature overlap, determination of differentially targeted features and/or feature-sets, determination of sequence characteristics surrounding integration sites, generation of experimentally matched random integration site datasets, and more. xInt is designed to streamline many of the most common analyses performed on integration site data.
+biocViews: Genetics, Sequencing, Software, SystemsBiology
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+License: GPL-3
+LazyData: false

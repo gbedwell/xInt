@@ -1,0 +1,281 @@
+---
+title: "Using xInt for Genomic Integration Site Analysis"
+author:
+- name: Greg Bedwell
+  affiliation: 
+  - Department of Cancer Immunology and Virology, Dana-Farber Cancer Institute, Boston, MA
+  - Department of Medicine, Harvard Medical School, Boston, MA
+  email: gregoryjbedwell@gmail.com
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+vignette: >
+  %\VignetteIndexEntry{Using xInt for Genomic Integration Site Analysis}
+  %\VignettePackage{xInt}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document:
+    number_sections: yes
+    toc: true
+---
+
+```{r style, echo=FALSE, results='asis'}
+BiocStyle::markdown()
+```
+
+# Introduction
+
+The `r Githubpkg("gbedwell/xInt")` package is designed for the analysis of genomic integration site (IS) data. The most common type of analysis done with IS data is assessing the degree of overlap between integration and a defined genomic feature-set, such as genes. Other common analyses include sequence logo generation, quantification of feature density around integration sites, and meta-feature analysis summarizing the position of integration within features-of-interest. xInt is intended to serve as a comprehensive, one-stop-shop for all of these common analysis types. xInt additionally includes functions for the fast generation of experimentally matched random IS datasets, generation of genome masks based on user-defined genome fragmentation methods, IS dataset import/cleaning, and implements the `r Biocpkg("limma")`-voom pipeline for per-feature analysis of differential integration targeting.
+
+xInt is currently available on [GitHub](https://github.com/gbedwell/xInt), and will soon be submitted to Bioconductor. xInt can currently be installed using devtools:
+
+```{r eval=FALSE}
+if (!require("devtools"))
+    install.packages("devtools")
+devtools::install_github( repo = "gbedwell/xInt" )
+```
+
+# Initialization
+
+Once xInt is installed, it can be loaded using R's <code>library()</code> function. A `r Biocpkg("BSgenome")` object for the genome-of-interest is additionally required for most of xInt's workhorse functions. There are many BSgenome objects already built and available to install. To see the list of available BSgenome objects, run <code>BSgenome::available.genomes()</code>. Custom BSgenome objects can also be built fairly easily; see the BSgenome documentation for more information. Human BSgenome objects all have <code>Hsapiens</code> as the second term in their name. For the [recently published](https://github.com/marbl/CHM13) T2T-CHM13v2 build, both <code>BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0</code> and <code>BSgenome.Hsapiens.UCSC.hs1</code> can be used, the only difference being the way the chromosomes are enumerated (e.g., "1" vs "chr1").
+
+```{r initialize, results="hide", warning=FALSE, message=FALSE}
+library(xInt)
+library(BSgenome.Hsapiens.UCSC.hs1)
+```
+
+# Data Import
+
+xInt's workhorse functions are designed to work on lists of IS datasets. The reason for this is that utilizing a single list as input is a more concise way of performing the same analysis across all datasets-of-interest than performing each analysis individually. xInt comes with example data available. This can be loaded with,
+
+```{r load-example-data}
+data(sites, package="xInt")
+```
+
+This loads the <code>sites</code> object, which is a list of GRanges objects. Each range is a single bp long and describes the location and orientation of integration on a given chromosome. Each element is named according to the name of the BED file from which the data was imported. For example purposes, "A", "B", and "C" represent different infection conditions and the numbers correspond to the replicate number.
+
+```{r}
+head(sites)[1:2]
+```
+
+Most of the time, datasets will need to be imported from disk. To do this, something like the following will work for the vast majority of cases:
+
+```{r, eval=FALSE, import-sites}
+sites <- import_sites(
+  path = "~/path/to/bed/files", 
+  pattern = ".bed", 
+  genome.obj = BSgenome.Hsapiens.UCSC.hs1, 
+  match.levels = TRUE
+  )
+```
+
+Here, <code>match.levels = TRUE</code> enforces the requirement that all ISs come from chromosomes annotated in the BSgenome object. In the case where e.g., autointegration sites are retained in the imported datasets, those sites should typically be removed prior to performing downstream analyses. If the BSgenome object and the IS datasets have different seqlevel/chromosome annotation styles, the <code>levels.style</code> argument can be used to change the seqlevels of the ISs to match the BSgenome object. See the <code>GenomeInfoDb::seqlevelsStyle()</code> documentation for more information.
+
+If you're used to working with BED files, you'll notice that GRanges have only a single coordinate given for IS positions, where BED files have 2. This is because BED files are half-closed coordinates (and 0-based), where the end coordinate is not included in the range itself (see [this](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) for more information). GRanges, on the other hand are (1-based) full-closed, meaning that both the start and the end coordinates are included in the range. Both coordinate systems describe the same single nucleotide position in the genome.
+
+## Subtracting Background
+
+In some instances, uninfected control(s) may have been included in the experimental setup and sequenced alongside IS libraries derived from infected cells. In the event that any ISs are identified in the uninfected control samples, it is pertinent to remove those from the infected samples, should they be present. Doing this reduces the presence of potential artifacts in the analyzed datasets.
+
+Given the names or index positions of the uninfected datasets in <code>sites</code>, artifacts can be removed using <code>subtract_uninfected_sites()</code>:
+
+```{r subtract-sites}
+uninf.id <- names(sites)[ grepl( pattern = "C", x = names(sites) ) ]
+
+sub.sites <- subtract_uninfected_sites(
+  site.list = sites,
+  uninfected.datasets = uninf.id
+)
+```
+
+The output of this function is an object of the same type as <code>sites</code> where the spurious ISs have been subtracted from each of the other datasets and the uninfected datasets have been removed. Looking at the size of each of the IS datasets before and after subtraction indicates that potential artifacts were present in many of the imported datasets.
+
+```{r}
+do.call( c, lapply( sites[ !names(sites) %in% uninf.id ], length ) )
+do.call( c, lapply( sub.sites, length ) )
+```
+
+## Importing Features
+
+There is no special xInt function to import genomic features, as <code>rtracklayer::import()</code> works just fine. The only word of caution is this: for making an xInt object (see below), the imported feature annotations must have a metadata column that corresponds to an identifier for each feature. For annotations like genes, this is no problem. Gene names are often included alongside genomic coordinates in the annotation file and are automatically imported by <code>import()</code> for standard filetypes (e.g., BED files). Other features, however, might be nameless. In these instances, the requisite metadata column should in added manually. An example of this is shown below in the creation of the metadata column "name2". This column is created for example purposes only.
+
+```{r}
+data(feats, package="xInt")
+```
+
+# xIntObjects
+
+Assessing and comparing the degree of feature overlaps between IS datasets is perhaps the most common IS analysis. In xInt, feature overlaps at both the local (individual features) and global (the entire feature-set) levels are neatly stored in an <code>xIntObject</code>. The function to make these objects, <code>make_xIntObject()</code>, takes several important inputs. These are:
+
+1.  <code>site.list</code> - A list of GRanges objects or a GRangesList object holding IS datasets.
+
+2.  <code>features</code> - A GRanges object defining the features-of-interest.
+
+3.  <code>conditions</code> - The experimental conditions under which the datasets were obtained (e.g., wild-type and knockout). The order of the given conditions must match the order that the datasets appear in <code>site.list</code>!
+
+4.  <code>condition.levels</code> - The factor levels corresponding to <code>conditions</code>. There should be one factor level for every unique condition given.
+
+5.  <code>id.col</code> - The name of the identifier column in <code>features</code>.
+
+```{r make-xInt-object}
+x.obj <- make_xIntObject(
+  site.list = sub.sites,
+  features = feats,
+  conditions = c(rep("A", 2), rep("B", 2)),
+  condition.levels = c("A", "B"),
+  id.col = "name"
+)
+```
+
+To verify that the object made is a valid <code>xIntObject</code>:
+
+```{r}
+is(x.obj, "xIntObject")
+```
+
+xIntObjects themselves are a subclass of the <code>RangedSummarizedExperiment</code> object. As such, all of the accessor functions for RSEs work on xIntObjects. The column data of xIntObjects stores global feature-set overlap information for each dataset in <code>site.list</code>, as well as the corresponding sample name and condition. The row data contains feature information. The accessor functions to access all of this information are visible when examining <code>g.obj</code>. Column data, for instance, is accessible with the <code>colData()</code> function, row data with <code>rowData()</code>, etc.
+
+```{r}
+x.obj
+colData(x.obj)
+```
+
+## Comparing Overlaps
+
+While xIntObjects store overlap information, their creation doesn't perform any comparisons between datasets. Overlap comparisons in xInt are performed by two functions: <code>local_comparisons()</code> and <code>global_comparisons()</code>. These functions perform per-feature and global comparisons, respectively.
+
+### Local Overlaps
+
+Comparison of local overlaps, or differential targeting, is analogous to differential expression or differential peak analysis in other genomic contexts. xInt relies internally on the limma-voom pipeline to assess differential targeting, the running which is done behind the scenes in <code>local_comparisons()</code>. Note that by default, xInt relies exclusively on library size normalization and does not perform any additional normalization steps (e.g., TMM, RLE, or UQ normalization). However, additional normalization routines can be performed in <code>local_comparisons()</code> with the <code>norm_method</code> argument. See the <code>edgeR::calcNormFactors()</code> documentation for more information. In addition, <code>local_comparisons()</code> by default returns contrast fits. That is, pairwise comparisons between all unique conditions in the xInt object.
+
+```{r local-comparisons}
+loc.comp <- local_comparisons( xint.obj = x.obj, return.contrasts = TRUE, plot = TRUE )
+```
+
+To examine the fit outputs, limma functions can be used. To get the overall summary of targeting differences between each contrast,
+
+```{r}
+summary( decideTests( loc.comp ) )
+```
+
+More granular information for each contrast can be gleaned with <code>topTable()</code>,
+
+```{r}
+head( topTable( loc.comp, coef = 1, number = Inf, p.value = 1 ) )
+```
+
+Here, the <code>coef</code> argument denote which contrasts to show, and correspond to the column/level order in <code>loc.comp$contrasts</code> or <code>summary(decideTests())</code>. Above, I show the results for the WT-CKO contrast. These results can be further filtered either by changing the p-value threshold in <code>topTable()</code> or by assigning the <code>topTable()</code> results to a global variable and manipulating it like a standard data frame.
+
+
+### Global Overlaps
+
+Global comparisons have long been the primary analysis done on IS data. The way in which these analyses have been done varies from lab-to-lab and study-to-study. The xInt function <code>global_comparisons()</code> operates on the log-cpm of the number of feature-overlapping sites for each unique condition. This serves to 1) normalize the number of overlapping sites for library size and 2) transform the count data to better satisfy the normal assumptions of the t-test. Each unique pairwise comparison is then made and the results are concatenated.
+
+```{r global-comparisons}
+global_comparisons( xint.obj = x.obj )
+```
+
+# Other Analyses
+
+## Sequence Logos
+
+Sequence logos generated in xInt take as input the same <code>site.list</code> used to make the <code>xIntObject</code>. The IS coordinates are centered and expanded a defined number of nucleotides. Centering of the IS coordinates requires definition of both the size of the target site duplication and the current position of the TSD occupied by the current start coordinate the ISs in <code>site.list</code>. These values default to <code>tsd = 5</code> and <code>current.start = 3</code>. The <code>return.plot</code> argument denotes whether or not a plot is returned. If <code>return.plot = FALSE</code>, the consensus matrix for each dataset is returned.
+
+<code>patchwork::wrap_plots()</code>
+
+```{r, logos, message=FALSE, warning=FALSE}
+make_logo( 
+  site.list = sub.sites[c(1,3)], 
+  seq.len = 24,
+  genome.obj = BSgenome.Hsapiens.UCSC.hs1,
+  return.plot = TRUE
+  )
+```
+
+## Free Energy of Transitions
+
+Calculation of the free energy of B-to-A transitions takes very similar arguments to <code>make_logo()</code>.
+
+```{r, dG, message=FALSE}
+calculate_dG( 
+  site.list = sub.sites[c(1,3)], 
+  step.len = 50,
+  genome.obj = BSgenome.Hsapiens.UCSC.hs1,
+  return.plot = TRUE
+  )
+```
+
+## Feature Density
+
+The <code>feature_density()</code> function calculates the number of given features within a particular distance of each IS. When <code>average = TRUE</code>, the average feature density value across all ISs is returned for each dataset. Otherwise, for each dataset, a vector of counts corresponding to the number of features within the defined distance of each IS is returned.
+
+```{r, feature-density}
+feature_density(
+  site.list = sub.sites,
+  features = feats,
+  win.size = 1E6,
+  average = TRUE
+)
+```
+
+## Meta-Feature Analysis
+
+Meta-feature plots summarize the relative position of ISs across features-of-interest genome-wide. xInt can report these relative positions in two ways. The first returns the relative positions of every IS within an annotated feature for each dataset.
+
+```{r, meta-feature}
+rp <- relative_positions(
+  site.list = sub.sites[c(1,3)],
+  features = feats,
+  bins = NULL
+)
+
+lapply( rp, head )
+```
+
+The second bins the data into percentiles across all features-of-interest and reports the binned output.
+
+```{r}
+relative_positions(
+  site.list = sub.sites[c(1,3)],
+  features = feats,
+  bins = 10
+)
+```
+
+
+# Random Site Generation
+
+Generating simulated random datasets in xInt is done with the function <code>simulate_random_data()</code>. This single function will:
+
+1. Randomly place integration sites throughout the defined genome,
+2. Cleave the genome relative to those integration sites,
+3. Filter the fragments based on the minimum allowed length and maximum allowed inner distance,
+4. Trim the fragments to create simulated paired-end fragments of a defined maximum read length,
+5. Write the paired-end reads and/or the generated fragment coordinates to disk.
+
+Sequence-specific genome fragmentation requires defining the enzyme recognition sequences in the <code>re.site</code> argument. Random fragmentation requires enumeration of the mean and standard deviation for possible fragment lengths in the <code>mean</code> and <code>sd</code> arguments, respectively.
+
+Below, I generate 10 random fragments. I do not write any simulated reads to disk (<code>write.reads = FALSE</code>), nor do I write any ranges to disk (<code>write.ranges = FALSE</code>). Additionally, <code>re.sites = NULL</code>, indicating that this is simulating random fragmentation.
+
+```{r random-sites, message=FALSE }
+set.seed(1)
+
+simulate_random_data(
+  genome.obj = BSgenome.Hsapiens.UCSC.hs1,
+  re.sites = NULL,
+  n.sites = 10, 
+  mean = 500,
+  sd = 250,
+  min.width = 14, 
+  max.distance = 600,
+  max.bp = 150,
+  iterations = 1,
+  write.ranges = FALSE,
+  write.reads = FALSE
+)
+```
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
