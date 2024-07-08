@@ -4,7 +4,8 @@
 #'
 #'@param site.list The list or GRangesList containing the mapped site coordinates.
 #'@param features The feature-set of interest. Should be a GRanges object.
-#'@param genome.obj The BSgenome object of interest. Used to assess outlier regions.
+#'@param genome.obj The BSgenome object of interest.
+#'Used to assess center coordinates and assess outlier regions.
 #'@param win.size The total distance around each site.
 #'@param current.start The position in the target site duplication currently described by start.
 #'This is used for centering the IS coordinates.
@@ -51,10 +52,6 @@ feature_density <- function( site.list, features,  genome.obj, win.size = 1E6,
                   expanded <- resize( x, width = win.size, fix = "center", ignore.strand = TRUE )
 
                   if( isTRUE( remove.outliers ) ){
-                    if( missing( genome.obj ) ){
-                      stop( "A BSgenome object must be provided.",
-                            call. = FALSE )
-                    }
                     outs <- bound_check( fragments = expanded,
                                          genome.obj = genome.obj,
                                          include.lower = TRUE )

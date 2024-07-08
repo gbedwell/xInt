@@ -98,7 +98,7 @@ metafeature <- function( site.list,
                       }
                     )
 
-  if( !is.null( bins ) & bins != 0 ){
+  if( !is.null( bins ) && bins != 0 ){
     b <- seq(0, 1, length.out = bins + 1 )
 
     pos.ll <- lapply(

@@ -199,6 +199,8 @@ data(sites2, package="xInt")
 make_logo( 
   site.list = sites2, 
   seq.len = 24,
+  current.start = 3,
+  tsd = 5,
   genome.obj = BSgenome.Hsapiens.UCSC.hs1,
   return.plot = TRUE
   )
@@ -214,8 +216,9 @@ Calculation of the free energy of B-to-A transitions takes very similar argument
 calculate_dG( 
   site.list = sites2, 
   step.len = 50,
-  genome.obj = BSgenome.Hsapiens.UCSC.hs1,
-  return.plot = TRUE
+  current.start = 3,
+  tsd = 5,
+  genome.obj = BSgenome.Hsapiens.UCSC.hs1
   )
 ```
 
@@ -229,6 +232,7 @@ feats <- rowRanges(xobj)
 feature_density(
   site.list = sites2,
   features = feats,
+  genome.obj = BSgenome.Hsapiens.UCSC.hs1,
   win.size = 1E6,
   average = TRUE
 )
@@ -239,19 +243,19 @@ feature_density(
 Meta-feature plots summarize the relative position of ISs across features-of-interest genome-wide. xInt can report these relative positions in two ways. The first returns the relative positions of every IS within an annotated feature for each dataset.
 
 ```{r, meta-feature}
-rp <- relative_positions(
+rp <- metafeature(
   site.list = sites2,
   features = feats,
   bins = NULL
 )
 
-lapply( rp, head )
+head( rp )
 ```
 
 The second bins the data into percentiles across all features-of-interest and reports the binned output.
 
 ```{r}
-relative_positions(
+metafeature(
   site.list = sites2,
   features = feats,
   bins = 10

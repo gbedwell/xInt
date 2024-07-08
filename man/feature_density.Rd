@@ -21,7 +21,8 @@ feature_density(
 
 \item{features}{The feature-set of interest. Should be a GRanges object.}
 
-\item{genome.obj}{The BSgenome object of interest. Used to assess outlier regions.}
+\item{genome.obj}{The BSgenome object of interest.
+Used to assess center coordinates and assess outlier regions.}
 
 \item{win.size}{The total distance around each site.}
 
