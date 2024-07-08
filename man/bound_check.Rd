@@ -9,7 +9,7 @@ bound_check(fragments, genome.obj, include.lower = FALSE)
 \arguments{
 \item{fragments}{The GRanges object being tested.}
 
-\item{genome.obj}{The genome object of interest.}
+\item{genome.obj}{The BSgenome object of interest.}
 
 \item{include.lower}{Boolean. Whether or not the check lower bound validity. This is not always necessary, so it can be toggled.}
 }
@@ -18,10 +18,4 @@ A vector of index values for terms in violation of genomic boundaries.
 }
 \description{
 Check that ranges do not violate genome/chromosome boundaries.
-}
-\examples{
-\dontrun{
-bound_check(fragments = frag.object, genome.obj = genome.object)
-}
-
 }

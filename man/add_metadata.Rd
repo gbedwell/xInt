@@ -48,5 +48,16 @@ add_metadata(
 The input xInt object with metadata attached.
 }
 \description{
-Adds basic experiment metadata to an xInt object. Intended to be used to attach important information (e.g., virus type, cell type, genome fragmentation method, etc.) directly to the related xInt object. Any/all metadata fields can be left blank, if desired.
+Adds basic experiment metadata to an xInt object.
+This is intended to be used to attach experiment information (e.g., virus type, cell type, genome fragmentation method, etc.)
+directly to the related xInt object or to the R environment itself.
+Any/all metadata fields can be left blank, if desired.
+}
+\examples{
+add_metadata(virus = "HIV-1",
+            cell.type = "HEK293T",
+            frag.method = "fragmentase",
+            seq.type = "paired-end",
+            read.length = "150 bp")
+
 }

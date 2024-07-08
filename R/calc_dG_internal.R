@@ -1,6 +1,7 @@
-#' Free Energy Internal Function
+#' calculate_dG Internal Function
 #'
 #' Called within calculate_dG().
+#' Performs the dG calculations across the provided sequences.
 #'
 #'@param seqs The sequences of interest.
 #'@param vals The deltaG values for each trimeric unit.

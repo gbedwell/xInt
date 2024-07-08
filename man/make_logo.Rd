@@ -8,9 +8,12 @@ make_logo(
   site.list,
   seq.len = 30,
   genome.obj,
-  current.start = 3,
+  ignore.strand = FALSE,
+  current.start = 1,
   tsd = 5,
-  return.plot = TRUE
+  return.plot = TRUE,
+  wrap = FALSE,
+  ...
 )
 }
 \arguments{
@@ -20,15 +23,38 @@ make_logo(
 
 \item{genome.obj}{The BSgenome object for the genome of interest.}
 
-\item{current.start}{The position in the target site duplication currently described by the start coordinates in site.list. This is used internally for centering the integration site coordinates.}
+\item{ignore.strand}{Boolean. Whether or not to ignore strandedness when extracting sequences.
+Defaults to FALSE.
+If TRUE, the sequence from the forward strand is returned.}
 
-\item{tsd}{The total length of the target site duplication. This is used along with current.start for centering the integration site coordinates.}
+\item{current.start}{The position in the target site duplication currently described by the start coordinates in site.list.
+This is used internally for centering the integration site coordinates.}
 
-\item{return.plot}{Boolean. Whether or not to return logos for each dataset in site.list instead of the consensus matrix. Defaults to TRUE.}
+\item{tsd}{The total length of the target site duplication.
+This is used along with current.start for centering the integration site coordinates.}
+
+\item{return.plot}{Boolean.
+Whether or not to return logos for each dataset in site.list instead of the consensus matrix.
+Defaults to TRUE.}
+
+\item{wrap}{Boolean. Used with return.plot.
+Whether or not to wrap the returned plots into a single output.
+When TRUE, arguments ncol and nrow can be used to format the output.}
+
+\item{...}{Used to pass additional plotting parameters to ggseqlogo.}
 }
 \value{
-If return.plot = TRUE, a list of ggplot2 objects containing sequence logos for the mapped integration site datasets in site.list. If return.plot = FALSE, a list of consensus matrices for each integraiton site dataset.
+If return.plot = TRUE, a list of ggplot2 objects containing sequence logos
+for the mapped integration site datasets in site.list.
+If return.plot = FALSE, a list of consensus matrices for each integration site dataset.
 }
 \description{
 Generates sequence logos or consensus matrices for integration site datasets.
+}
+\examples{
+library(BSgenome.Hsapiens.UCSC.hs1)
+data(sites2)
+make_logo(site.list = sites2,
+         genome.obj = Hsapiens)
+
 }

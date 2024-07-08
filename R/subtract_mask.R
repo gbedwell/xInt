@@ -1,8 +1,9 @@
 #' Subtract Mask
 #'
-#' Subtract masked regions of the genome from ranges of interest. Takes GRanges objects as inputs. Will append all reference metadata columns except the revmap column (if present) to the subtracted ranges.
+#' Subtract masked regions of the genome from ranges of interest.
+#' Appends all reference metadata columns except the revmap column (if present) to the subtracted ranges.
 #'
-#'@param reference GRanges object corresponding to the regions-of-interest.
+#'@param reference GRanges object corresponding to the regions/coordinates of interest.
 #'@param mask GRanges object corresponding to the masked regions.
 #'
 #'@return A GRanges object containing the subtracted coordinates.

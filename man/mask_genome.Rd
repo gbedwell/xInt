@@ -16,7 +16,8 @@ mask_genome(
 
 \item{genome.obj}{The BSgenome object of interest.}
 
-\item{ignore.chromosomes}{Chromosomes to be ignored in masking. These chromosomes are not included in the final output.}
+\item{ignore.chromosomes}{Chromosomes to be ignored in masking.
+These chromosomes are not included in the final output.}
 
 \item{n.cores}{The number of cores to use for parallel computing.}
 }
@@ -24,5 +25,6 @@ mask_genome(
 A GRanges object containing the masked regions of the genome.
 }
 \description{
-Enumerates regions of the genome that cannot be uniquely mapped to given a particular experimental approach (genome fragmentation method, read length, etc.).
+Enumerates regions of the genome that cannot be uniquely mapped
+given a particular experimental approach (genome fragmentation method, read length, etc.).
 }

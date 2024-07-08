@@ -19,5 +19,6 @@ trim_seqs(fragments, min.width = 14, max.distance = 1000, max.bp = 150)
 A list containing simulated R1 and R2 reads.
 }
 \description{
-Trim the generated random fragments to simulate sequencing reads. Creates paired end fragments of a defined maximum read size and with a defined maximum inner distance.
+Trim the generated random fragments to simulate sequencing reads.
+Creates paired end fragments of a defined maximum read size and with a defined maximum inner distance.
 }

@@ -9,8 +9,8 @@ simulate_random_data(
   re.sites = NULL,
   cut.after = 1,
   n.sites,
-  mean = 500,
-  sd = 250,
+  mean = 400,
+  sd = 100,
   min.width = 14,
   max.distance = 1000,
   max.bp = 150,
@@ -21,6 +21,7 @@ simulate_random_data(
   prefix = NULL,
   directory.path = ".",
   compress = TRUE,
+  paired = TRUE,
   collapse = TRUE,
   to.chr.ends = TRUE
 )
@@ -30,27 +31,37 @@ simulate_random_data(
 
 \item{re.sites}{A character vector of restriction enzyme recognition sequences.}
 
-\item{cut.after}{An integer that defines the nucleotide after which the DNA is cleaved in the restriction enzyme recognition sequence. Defaults to 1.}
+\item{cut.after}{An integer that defines the nucleotide after which the
+DNA is cleaved in the restriction enzyme recognition sequence. Defaults to 1.}
 
-\item{n.sites}{The number of sites to generate. Can be either a single value or a vector of values.}
+\item{n.sites}{The number of sites to generate.
+Can be either a single value or a vector of values.}
 
 \item{mean}{The target mean fragment size. Only used for random fragmentation.}
 
-\item{sd}{The target fragment size standard deviation. Only used for random fragmentation.}
+\item{sd}{The target fragment size standard deviation.
+Only used for random fragmentation.}
 
-\item{min.width}{The minimum desired fragment/read length. Defaults to 14 bp.}
+\item{min.width}{The minimum desired fragment/read length.
+Defaults to 14 bp.}
 
-\item{max.distance}{The maximum desired inner distance. Defaults to 1000 bp.}
+\item{max.distance}{The maximum desired inner distance.
+Defaults to 1000 bp.}
 
-\item{max.bp}{The maximum read length. Default 150 bp.}
+\item{max.bp}{The maximum read length.
+Defaults to 150 bp.}
 
-\item{iterations}{The number of random datasets to generate. If > 1, the number of values given for n.sites must be 1. In this case, random datasets consisting of the same number of sites are generated for each iteration.}
+\item{iterations}{The number of random datasets to generate.
+If > 1, the number of values given for n.sites must be 1.
+In this case, random datasets consisting of the same number of sites are generated for each iteration.}
 
-\item{n.cores}{The number of cores to use. Enables parallelization.}
+\item{n.cores}{The number of cores to use.}
 
-\item{write.ranges}{Boolean. Whether or not to write out the coordinates of the generated random fragments. Defaults to FALSE.}
+\item{write.ranges}{Boolean. Whether or not to write out the coordinates of the generated random fragments.
+Defaults to FALSE.}
 
-\item{write.reads}{Boolean. Whether or not to save the generated reads as R1 and R2 fasta files. Defaults to TRUE.}
+\item{write.reads}{Boolean. Whether or not to save the generated reads as R1 and R2 fasta files.
+Defaults to TRUE.}
 
 \item{prefix}{The file prefix appended to saved files.}
 
@@ -58,13 +69,52 @@ simulate_random_data(
 
 \item{compress}{Boolean. Whether or not to compress the output FASTA files. Defaults to TRUE.}
 
-\item{collapse}{Boolean. Whether or not to collapse the generated fragments for each iteration into a single object. Defaults to TRUE.}
+\item{paired}{Boolean. Whether or not to save paired-end fasta files.}
 
-\item{to.chr.ends}{Boolean. Whether or not to treat chromosome ends as capable of generating potentially mappable fragments. Defaults to TRUE.}
+\item{collapse}{Boolean. Whether or not to collapse the generated fragments for each iteration
+into a single object. Defaults to TRUE.}
+
+\item{to.chr.ends}{Boolean. Whether or not to treat chromosome ends as capable of generating
+potentially mappable fragments. Defaults to TRUE.}
 }
 \value{
-Default behavior will save paired R1 and R2 fasta files to disk that mimic NGS data. The fragment coordinates used to generate those fasta files will be returned as a GRanges object.
+Default behavior will save paired R1 and R2 fasta files to disk that mimic NGS data.
+The fragment coordinates used to generate those fasta files will be returned as a GRanges object.
 }
 \description{
 Generate random fragments from a defined genome under experimentally matched conditions.
+}
+\examples{
+\donttest{
+library(BSgenome.Hsapiens.UCSC.hs1)
+set.seed(1)
+
+simulate_random_data(
+ genome.obj = Hsapiens,
+ re.sites = NULL,
+ n.sites = 10,
+ mean = 400,
+ sd = 100,
+ min.width = 14,
+ max.distance = 900,
+ max.bp = 150,
+ iterations = 1,
+ write.ranges = FALSE,
+ write.reads = FALSE
+)
+
+simulate_random_data(
+ genome.obj = Hsapiens,
+ re.sites = "TTAA",
+ cut.after = 2,
+ n.sites = 10,
+ min.width = 14,
+ max.distance = 900,
+ max.bp = 150,
+ iterations = 1,
+ write.ranges = FALSE,
+ write.reads = FALSE
+)
+}
+
 }

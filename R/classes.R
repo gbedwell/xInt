@@ -1,3 +1,8 @@
+#'xIntObject-class
+#'@examples
+#'data(xobj)
+#'validObject(xobj)
+#'
 #'@import methods
 #'@export
 setClass( "xIntObject",
@@ -23,10 +28,12 @@ setValidity(
       return( "Count data must be positive." )
     }
 
-    if( !all( c( "sample", "total.sites", "overlapping.sites", "fraction.overlap", "condition" ) %in% names( colData( object ) ) ) ){
+    if( !all( c( "sample", "total.sites", "overlapping.sites", "fraction.overlap", "condition" ) %in%
+              names( colData( object ) ) ) ){
 
       msg <- paste( "colData must contain",
-                    paste( c( "sample", "total.sites", "overlapping.sites", "fraction.overlap", "condition" ), collapse = ", " ),
+                    paste( c( "sample", "total.sites", "overlapping.sites", "fraction.overlap", "condition" ),
+                           collapse = ", " ),
                     collapse = " " )
       return( msg )
     }
@@ -55,3 +62,33 @@ setValidity(
 
   }
 )
+
+setClassUnion("SiteList", members = c("list", "GRangesList"))
+
+setClass( "SiteListObject",
+          contains = "SiteList" )
+
+setValidity(
+  "SiteListObject",
+  function( object ){
+
+    if( is( object@data, "list" ) ){
+      for( element in object@data ){
+        if( !is( element, "GRanges" ) ){
+          return( "All elements in the list must be GRanges objects." )
+        }
+      }
+    }
+
+    if( is.null( names( object ) ) || length( names( object ) ) != length( object) ){
+      return( "All elements must be named." )
+    }
+
+    return( TRUE )
+
+  }
+)
+
+
+
+

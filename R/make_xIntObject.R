@@ -1,15 +1,37 @@
 #' Make xIntObject
 #'
-#' Creates a ranged summarized experiment object compatible with other xInt functions. Stores summary information for each sample in column data. Range information is stored in row data.
+#' Creates a ranged summarized experiment object compatible with other xInt functions.
+#' Stores summary and global information for each sample in column data.
+#' Range information is stored in row data.
 #'
-#'@param site.list The list of integration site datasets
-#'@param features The feature-set of interest.
-#'@param conditions The infection condition for each dataset. Must be same length as site.list.
-#'@param condition.levels The factor levels of conditions. Length should be the number of unique conditions.
-#'@param min.overlap The minimum amount of overlap to count two regions as overlapping
-#'@param id.col The ID column in the features GRanges object. Default "name".
+#'@param site.list A list of GRanges objects or a GRangesList holding IS coordinates.
+#'@param features A GRanges object for the feature-set of interest.
+#'@param conditions The infection condition for each dataset.
+#'Must be same length as site.list.
+#'@param condition.levels The factor levels of conditions.
+#'All entries should be present in conditions.
+#'Length should be the number of unique conditions.
+#'@param min.overlap The minimum amount of overlap to count two regions as overlapping.
+#'Defaults to 1.
+#'@param id.col The ID column in the features GRanges object.
+#'Must be provided.
+#'Default "name".
+#'@param ... Used for adding additional columns to the object column data.
+#'Automatically converted to a factor.
+#'Intended for batch information, etc.
 #'
-#'@return A SummarizedExperiment object containing local and global feature overlap information for each dataset in site.list.
+#'@return A SummarizedExperiment object containing local and global feature overlap
+#'information for each dataset in site.list.
+#'
+#'@examples
+#'data(sites)
+#'sites <- sites[!names(sites) %in% "C1"]
+#'data(xobj)
+#'feats <- rowRanges(xobj)
+#'make_xIntObject(site.list = sites,
+#'                features = feats,
+#'                conditions = c(rep("A",4),rep("B",5)),
+#'                condition.levels = c("A","B"))
 #'
 #'@import GenomicRanges
 #'@import SummarizedExperiment
@@ -20,13 +42,12 @@
 #'@export
 #'
 make_xIntObject <- function( site.list,
-                         features,
-                         conditions,
-                         condition.levels,
-                         min.overlap = 1L,
-                         id.col = "name" ){
-
-  # TO-DO: Add a check for feature rownames. They must either be NULL or match the output count matrix rownames.
+                             features,
+                             conditions,
+                             condition.levels,
+                             min.overlap = 1L,
+                             id.col = "name",
+                             ... ){
 
   if( !id.col %in% names( mcols( features ) ) ){
     stop( "features must have an identifier column holding identifiers for each annotated region.",
@@ -35,12 +56,16 @@ make_xIntObject <- function( site.list,
           call. = FALSE )
   }
 
-  check_sites( site.list )
+  if( !validObject( site.list ) ){
+    stop( "site.list is not a valid SiteListObject.",
+          call. = FALSE )
+  }
 
   sample.names <- names( site.list )
 
   if( length( sample.names ) != length( conditions ) ){
-    stop( "The number of sample names does not match the number of conditions. There must be 1 condition given for each dataset in site.list.",
+    stop( "The number of sample names does not match the number of conditions.
+          There must be 1 condition given for each dataset in site.list.",
           call. = FALSE )
   }
 
@@ -66,7 +91,8 @@ make_xIntObject <- function( site.list,
                             multioverlap <- length( countSubjectHits(x)[ countSubjectHits(x) > 1 ] )
 
                             if ( multioverlap != 0 ){
-                              ol.check <- length( countSubjectHits(x)[ countSubjectHits(x) != 0 ] ) == overlapping
+                              ol.check <- length(
+                                countSubjectHits(x)[ countSubjectHits(x) != 0 ] ) == overlapping
 
                               if( !isTRUE( ol.check ) ){
                                 stop( "Error in counting feature overlaps.",
@@ -85,6 +111,12 @@ make_xIntObject <- function( site.list,
   frac.overlap <- data.frame( sample = sample.names,
                               frac.overlap,
                               condition = factor( conditions, levels = condition.levels ) )
+
+  other.cols <- list( ... )
+
+  for( vec in names( other.cols ) ){
+    frac.overlap[[vec]] <- factor( other.cols[[vec]] )
+  }
 
   feature.counts <- lapply( X = hits,
                             FUN = function(x){

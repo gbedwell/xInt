@@ -1,6 +1,7 @@
 #' Trim Fragments
 #'
-#' Trim the generated random fragments to simulate sequencing reads. Creates paired end fragments of a defined maximum read size and with a defined maximum inner distance.
+#' Trim the generated random fragments to simulate sequencing reads.
+#' Creates paired end fragments of a defined maximum read size and with a defined maximum inner distance.
 #'
 #'@param fragments The DNAStringSet object containing the random fragment sequences.
 #'@param min.width The minimum acceptable read length. Defaults to 14 bp.

@@ -1,10 +1,18 @@
-#' Classic Proportion Comparisons
+#' Proportion Comparisons
 #'
 #' Performs global pairwise comparisons on an xInt object using classic tests for equal proportions.
 #'
-#'@param xint.obj The xInt object containing the relevant data.
-#'@param comparison The extent of the pairwise comparisons. <code>all</code> will compare every dataset to all other datasets. <code>pooled</code> pools the information by condition and performs pairwise comparisons across conditions.
-#'@param p.adj The method by which to correct p-values for multiple comparisons. Can be NULL. Defaults to "BH". See p.adjust() documentation for more details.
+#'@param xint.obj The xIntObject containing the relevant data.
+#'@param comparison The extent of the pairwise comparisons.
+#'<code>all</code> will compare every dataset to all other datasets.
+#'This can take a long time.
+#'<code>pooled</code> pools the information by condition and performs pairwise comparisons across conditions.
+#'@param p.adj The method by which to correct p-values for multiple comparisons.
+#'Defaults to "BH". See p.adjust() documentation for more details.
+#'
+#'@examples
+#'data(xobj)
+#'prop_tests(xint.obj = xobj, comparison="pooled")
 #'
 #'@importFrom utils combn
 #'@importFrom stats chisq.test fisher.test pchisq p.adjust
@@ -15,9 +23,7 @@
 #'
 #'@export
 #'
-classic_prop_tests <- function( xint.obj, comparison = c( "all", "pooled" ), p.adj = "BH" ){
-
-  # Potential to-do: implement tests to return log(p) in case of extremely small p-values.
+prop_tests <- function( xint.obj, comparison = c( "all", "pooled" ), p.adj = "BH" ){
 
   if( !validObject( xint.obj ) ){
     stop( "xint.obj is not a valid xIntObject.",
@@ -27,7 +33,7 @@ classic_prop_tests <- function( xint.obj, comparison = c( "all", "pooled" ), p.a
   comparison = match.arg( comparison )
 
   g.test <- function( x ){
-    ex <- outer( rowSums( x ), colSums( x ) )/sum( x )
+    ex <- outer( rowSums( x ), colSums( x ) ) / sum( x )
     G <- 2 * sum( x * log( x / ex ) )
     pchisq( q = G, df = 1, lower.tail = FALSE, log = FALSE)
   }
@@ -74,7 +80,7 @@ classic_prop_tests <- function( xint.obj, comparison = c( "all", "pooled" ), p.a
   or <- pairwise[ 4, ]
   pairh <- pairwise[ 5, ]
 
-  if (!is.null( p.adj ) && ncol( pairwise ) > 1 ){
+  if ( ncol( pairwise ) > 1 ){
     pairwise <- apply(X = pairwise[1:3,],
                       MARGIN = 1,
                       FUN = function(x){

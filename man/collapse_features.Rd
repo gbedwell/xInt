@@ -14,15 +14,25 @@ collapse_features(
 \arguments{
 \item{features}{A GRanges object holding the features-of-interest.}
 
-\item{ignore.strand}{Logical. Whether or not to ignore the strandedness of the features. Defaults to TRUE.}
+\item{ignore.strand}{Boolean. Whether or not to ignore the strandedness of the features. Defaults to TRUE.}
 
-\item{original.names}{Logical. Whether or not keep the original feature names. In the case of overlapping features, the feature names are changed to include them all, separated by hyphens. This can be slow. If FALSE, new features are named Feature 1 to Feature N.}
+\item{original.names}{Boolean. Whether or not keep the original feature names.
+In the case of overlapping features, the feature names are changed to include them all, separated by hyphens.
+This can be slow.
+If FALSE (default), new features are named Feature1 to FeatureN.}
 
-\item{id.col}{The metadata column containing feature names. Must be provided if original.names = TRUE. Can be NULL.}
+\item{id.col}{The metadata column containing feature names.
+Must be provided if original.names = TRUE.}
 }
 \value{
 A GRanges object of collapsed features.
 }
 \description{
-Collapse features-of-interest to eliminate overlapping features that might result in multiple counting of individual integration sites.
+Collapse overlapping features-of-interest into a single region.
+}
+\examples{
+data(xobj)
+feats <- rowRanges(xobj)
+collapse_features(features = feats)
+
 }

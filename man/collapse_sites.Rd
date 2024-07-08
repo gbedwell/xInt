@@ -4,18 +4,26 @@
 \alias{collapse_sites}
 \title{Pool Replicate Datasets}
 \usage{
-collapse_sites(site.list, group.index.list, group.names = NULL)
+collapse_sites(site.list, group.index.list)
 }
 \arguments{
 \item{site.list}{A list of GRanges objects or a GRangesList containing integration site coordinates from various samples.}
 
-\item{group.index.list}{A list of index vectors enumerating which site.list elements correspond to which conditions. Each group.index.list element should correspond to a unique condition.}
-
-\item{group.names}{A character vector of names corresponding to the represented conditions. The order should match the order given in group.index.list.}
+\item{group.index.list}{A list of index vectors enumerating which site.list elements correspond to which conditions.
+Each group.index.list element should correspond to a unique condition.}
 }
 \value{
 A list of GRanges objects or a GRangesList of the combined coordinates.
 }
 \description{
-Given a list of integration site datasets containing replicates from various conditions, pool the replicates into a single, larger dataset while keeping different conditions separate.
+Given a list of integration site datasets containing replicates from various conditions,
+pool the replicates into a single, larger dataset while keeping different conditions separate.
+}
+\examples{
+data(sites)
+collapse_sites(site.list = sites,
+              group.index.list = list(A = 1:4,
+                                      B = 5:9,
+                                      C = 10)
+
 }

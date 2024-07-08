@@ -9,25 +9,31 @@ make_fragments(
   frag.sites = NULL,
   random = TRUE,
   mean = 500,
-  sd = 250,
+  sd = 150,
   genome.obj,
   to.chr.ends = TRUE
 )
 }
 \arguments{
-\item{insert.sites}{The generated random integration sites}
+\item{insert.sites}{The generated random integration sites.}
 
-\item{frag.sites}{The positions in the genome where fragmentation occurs. For random fragmentation, this should be left NULL. If using restriction enzymes with pattern specificity, this should be the output of digest().}
+\item{frag.sites}{The positions in the genome where fragmentation occurs.
+For random fragmentation, this should be left NULL.
+If using restriction enzymes with pattern specificity, this should be the output of digest().}
 
-\item{random}{Boolean. Whether or not frag.sites are to be generated randomly (TRUE) or by simulated restriction digestion (FALSE)}
+\item{random}{Boolean. Whether or not frag.sites are to be generated
+randomly (TRUE) or by simulated restriction digestion (FALSE)}
 
-\item{mean}{Only required when random is TRUE. The target mean fragment size. 500 bp default.}
+\item{mean}{Only required when random is TRUE.
+The target mean fragment size. 400 bp default.}
 
-\item{sd}{Only required when random is TRUE. The target fragment size standard deviation. 250 bp default.}
+\item{sd}{Only required when random is TRUE.
+The target fragment size standard deviation. 150 bp default.}
 
 \item{genome.obj}{The BSgenome object of interest.}
 
-\item{to.chr.ends}{Boolean. Whether or not to treat chromosome ends as capable of generating potentially mappable fragments. Defaults to TRUE.}
+\item{to.chr.ends}{Boolean. Whether or not to treat chromosome ends as capable of generating
+potentially mappable fragments. Defaults to TRUE.}
 }
 \value{
 A GRanges object of fragment ranges.

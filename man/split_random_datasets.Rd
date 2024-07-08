@@ -5,7 +5,7 @@
 \title{Split Random Datasets}
 \usage{
 split_random_datasets(
-  ds.list,
+  p.list,
   genome.obj,
   n.cores = 1,
   n.split = 5,
@@ -13,7 +13,7 @@ split_random_datasets(
 )
 }
 \arguments{
-\item{ds.list}{A list of random fragment position datasets.}
+\item{p.list}{A list of datasets holding the positions of random fragments.}
 
 \item{genome.obj}{The BSgenome object of interest.}
 
@@ -24,8 +24,10 @@ split_random_datasets(
 \item{directory.path}{The path of the output directory.}
 }
 \value{
-Saves to disk compressed RData objects containing random fragment positions for subsets of chromosomes. Note that all saved objects contain a variable of the same name.
+Saves to disk compressed RData objects containing random fragment positions for subsets of chromosomes.
+Note that all saved objects contain a variable of the same name.
 }
 \description{
-Splits a list a large random fragment position datasets by chromosome subsets and combines matching subsets from all datasets into a single object.
+Splits a list of large random fragment position datasets by chromosome subsets and combines
+matching subsets from all datasets into a single object.
 }

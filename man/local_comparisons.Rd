@@ -8,7 +8,9 @@ local_comparisons(
   xint.obj,
   min.count,
   min.total.count,
+  trend = FALSE,
   norm.method = NULL,
+  remove.zeros = TRUE,
   plot = TRUE,
   return.contrasts = TRUE
 )
@@ -16,19 +18,39 @@ local_comparisons(
 \arguments{
 \item{xint.obj}{The xInt object of interest.}
 
-\item{min.count}{Used to filter lowly targeted features. If not provided, defaults to 1. Used as an input to edgeR's \if{html}{\out{<code>}}filterByExpr()\if{html}{\out{</code>}}.}
+\item{min.count}{Used to filter lowly targeted features.
+If not provided, defaults to 1.
+Used as an input to edgeR's \if{html}{\out{<code>}}filterByExpr()\if{html}{\out{</code>}}.}
 
-\item{min.total.count}{Used alongside min.count to filter lowly targeted features. If not provided, defaults to one-half of the number of samples. Used as an input to edgeR's \if{html}{\out{<code>}}filterByExpr()\if{html}{\out{</code>}}.}
+\item{min.total.count}{Used alongside min.count to filter lowly targeted features.
+If not provided, defaults to one-half of the number of samples.
+Used as an input to edgeR's \if{html}{\out{<code>}}filterByExpr()\if{html}{\out{</code>}}.}
 
-\item{norm.method}{If NULL, only library size normalization is performed. Otherwise, must be one of the valid options in edgeR's \if{html}{\out{<code>}}calcNormFactors()\if{html}{\out{</code>}}.}
+\item{trend}{Boolean. Passed to \if{html}{\out{<code>}}limma::eBayes()\if{html}{\out{</code>}}. See limma documentation for more information. Defaults to FALSE.}
 
-\item{plot}{Boolean. Whether or not to output diagnostic plots related to sample biases and mean-variance modeling. Defaults to TRUE.}
+\item{norm.method}{If NULL, only library size normalization is performed.
+Otherwise, must be one of the valid options in edgeR's \if{html}{\out{<code>}}calcNormFactors()\if{html}{\out{</code>}}.}
 
-\item{return.contrasts}{Boolean. Whether or not to return the contrast fits. Defaults to TRUE. If FALSE, the lmFit() output is returned after empirical Bayes moderation.}
+\item{remove.zeros}{Boolean. Whether or not to remove rows with all zeros from the count matrix. Defaults to TRUE.}
+
+\item{plot}{Boolean. Whether or not to output diagnostic plots related to sample biases and mean-variance modeling.
+Defaults to TRUE.}
+
+\item{return.contrasts}{Boolean. Whether or not to return the contrast fits. Defaults to TRUE.
+If FALSE, the lmFit() output is returned after empirical Bayes moderation.}
 }
 \value{
 A MArrayLM object containing the results of feature-wise linear fits.
 }
 \description{
-Perform per-feature integration targeting comparisons within a given feature-set. This is analogous to differential expression analyses for e.g., RNA-seq and uses the same machinery in limma. The output object can be further analyzed using other limma functions, such as \if{html}{\out{<code>}}decideTests()\if{html}{\out{</code>}} and \if{html}{\out{<code>}}topTable()\if{html}{\out{</code>}}. See the limma documentation for more information.
+Perform per-feature integration targeting comparisons within a given feature-set.
+This is analogous to differential expression analyses for e.g., RNA-seq and uses the same machinery in limma.
+The output object can be further analyzed using other limma functions,
+such as \if{html}{\out{<code>}}decideTests()\if{html}{\out{</code>}} and \if{html}{\out{<code>}}topTable()\if{html}{\out{</code>}}.
+See the limma documentation for more information.
+}
+\examples{
+data(xobj)
+local_comparisons(xint.obj = xobj, plot = FALSE)
+
 }

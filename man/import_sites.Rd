@@ -6,15 +6,22 @@
 \usage{
 import_sites(
   path,
+  files,
   pattern = ".bed",
   genome.obj = NULL,
   levels.style = NULL,
   keep.metadata = FALSE,
-  return.GRangesList = FALSE
+  return.GRangesList = FALSE,
+  sort = TRUE
 )
 }
 \arguments{
-\item{path}{The path of the mapped integration site datasets.}
+\item{path}{The path to the mapped integration site datasets.
+Ideally, the path should only contain the IS datasets of interest.}
+
+\item{files}{A character vector of file names to import.
+Allows flexibility if not all datasets are in the same path.
+Should not be used if \if{html}{\out{<code>}}path\if{html}{\out{</code>}} is defined.}
 
 \item{pattern}{The extension of the integration site dataset files. Defaults to ".bed".}
 
@@ -24,9 +31,16 @@ Seqlevels present in the IS datasets but not present in the genome.obj are remov
 
 \item{levels.style}{The preferred style of seqlevels.}
 
-\item{keep.metadata}{Boolean. Whether or not the keep metadata contained in the imported datasets. Defaults to FALSE.}
+\item{keep.metadata}{Boolean.
+Whether or not the keep metadata contained in the imported datasets.
+Defaults to FALSE.}
 
-\item{return.GRangesList}{Boolean. Whether or not the return the list of imported integration site datasets as a GRangesList. Defaults to FALSE.}
+\item{return.GRangesList}{Boolean.
+Whether or not the return the list of imported integration site datasets as a GRangesList.
+Defaults to FALSE.}
+
+\item{sort}{Boolean. Whether or not to sort the imported data.
+Sorts seqlevels first, then ranges. Ignores strand.}
 }
 \value{
 A list of GRanges objects or a GRangesList containing mapped integration sites.

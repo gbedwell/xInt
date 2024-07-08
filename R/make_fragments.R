@@ -2,13 +2,19 @@
 #'
 #' Make random fragments from random integration site positions and genomic cleavage sites
 #'
-#'@param insert.sites The generated random integration sites
-#'@param frag.sites The positions in the genome where fragmentation occurs. For random fragmentation, this should be left NULL. If using restriction enzymes with pattern specificity, this should be the output of digest().
-#'@param random Boolean. Whether or not frag.sites are to be generated randomly (TRUE) or by simulated restriction digestion (FALSE)
-#'@param mean Only required when random is TRUE. The target mean fragment size. 500 bp default.
-#'@param sd Only required when random is TRUE. The target fragment size standard deviation. 150 bp default.
+#'@param insert.sites The generated random integration sites.
+#'@param frag.sites The positions in the genome where fragmentation occurs.
+#'For random fragmentation, this should be left NULL.
+#'If using restriction enzymes with pattern specificity, this should be the output of digest().
+#'@param random Boolean. Whether or not frag.sites are to be generated
+#'randomly (TRUE) or by simulated restriction digestion (FALSE)
+#'@param mean Only required when random is TRUE.
+#'The target mean fragment size. 400 bp default.
+#'@param sd Only required when random is TRUE.
+#'The target fragment size standard deviation. 150 bp default.
 #'@param genome.obj The BSgenome object of interest.
-#'@param to.chr.ends Boolean. Whether or not to treat chromosome ends as capable of generating potentially mappable fragments. Defaults to TRUE.
+#'@param to.chr.ends Boolean. Whether or not to treat chromosome ends as capable of generating
+#'potentially mappable fragments. Defaults to TRUE.
 #'
 #'@return A GRanges object of fragment ranges.
 #'
@@ -70,7 +76,7 @@ make_fragments <- function( insert.sites,
 
     frag.ranges <- do.call(c, frag.ranges)
 
-    if( to.chr.ends ){
+    if( isTRUE( to.chr.ends ) ){
 
       unmatched <- insert.sites[ !insert.sites %over% frag.ranges, ]
 

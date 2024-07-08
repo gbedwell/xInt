@@ -2,14 +2,24 @@
 #'
 #' Import a set of integration site datasets from a defined path.
 #'
-#'@param path The path of the mapped integration site datasets.
+#'@param path The path to the mapped integration site datasets.
+#'Ideally, the path should only contain the IS datasets of interest.
+#'@param files A character vector of file names to import.
+#'Allows flexibility if not all datasets are in the same path.
+#'Should not be used if <code>path</code> is defined.
 #'@param pattern The extension of the integration site dataset files. Defaults to ".bed".
 #'@param genome.obj The BSgenome object corresponding to genome of interest.
 #'When not NULL, the seqlevels in each IS dataset are compared to the seqlevels of the genome.obj.
 #'Seqlevels present in the IS datasets but not present in the genome.obj are removed.
 #'@param levels.style The preferred style of seqlevels.
-#'@param keep.metadata Boolean. Whether or not the keep metadata contained in the imported datasets. Defaults to FALSE.
-#'@param return.GRangesList Boolean. Whether or not the return the list of imported integration site datasets as a GRangesList. Defaults to FALSE.
+#'@param keep.metadata Boolean.
+#'Whether or not the keep metadata contained in the imported datasets.
+#'Defaults to FALSE.
+#'@param return.GRangesList Boolean.
+#'Whether or not the return the list of imported integration site datasets as a GRangesList.
+#'Defaults to FALSE.
+#'@param sort Boolean. Whether or not to sort the imported data.
+#' Sorts seqlevels first, then ranges. Ignores strand.
 #'
 #'@return A list of GRanges objects or a GRangesList containing mapped integration sites.
 #'
@@ -20,16 +30,32 @@
 #'
 #'@export
 #'
-import_sites <- function( path, pattern = ".bed", genome.obj = NULL, levels.style = NULL,
-                          keep.metadata = FALSE, return.GRangesList = FALSE ){
+import_sites <- function( path, files, pattern = ".bed", genome.obj = NULL, levels.style = NULL,
+                          keep.metadata = FALSE, return.GRangesList = FALSE, sort = TRUE ){
 
-  ff <- list.files( path = path,
-                    full.names = TRUE,
-                    pattern = pattern )
+  if( !missing( path ) & !missing( files ) ){
+    stop( "Both 'path' and 'files' cannot be defined.",
+          call. = FALSE )
+  }
+
+  if( missing( path ) & missing( files ) ){
+    stop( "Provide either a single path to the files of interest
+          or a character vector of files to import.",
+          call. = FALSE )
+  }
+
+  if( !missing( path ) ){
+    ff <- list.files( path = path,
+                      full.names = TRUE,
+                      pattern = pattern )
+  } else{
+    ff <- files
+  }
 
   sites <- lapply( X = ff,
                    FUN = function(x){
-                     gr <- import( con = x )
+                     gr <- import( con = x,
+                                   format = sub( pattern=".", replacement = "", x = pattern ) )
 
                      if( !is.null( levels.style ) ){
                        seqlevelsStyle( gr ) <- levels.style
@@ -37,6 +63,11 @@ import_sites <- function( path, pattern = ".bed", genome.obj = NULL, levels.styl
 
                      if( !keep.metadata ){
                        mcols(gr) <- NULL
+                     }
+
+                     if( sort ){
+                       gr <- sortSeqlevels(gr)
+                       gr <- sort( gr, ignore.strand = TRUE )
                      }
 
                      return(gr)
@@ -54,7 +85,7 @@ import_sites <- function( path, pattern = ".bed", genome.obj = NULL, levels.styl
     names(sites) <- nn
   }
 
-  if( !is.null( genome.obj ) | !missing( genome.obj ) ){
+  if( !is.null( genome.obj ) ){
     levs <- lapply( X = sites,
                     FUN = function(x){
                       seqlevels(x)
@@ -67,14 +98,14 @@ import_sites <- function( path, pattern = ".bed", genome.obj = NULL, levels.styl
     levs <- levs[ levs %in% seqlevels( genome.obj ) ]
 
     if( length( out ) > 0 ){
-      warning( "The following seqlevels were removed from the integration site datasets: ",
+      warning( "The following seqlevels were removed from integration site datasets: ",
                paste( out, collapse = ", " ),
                call. = FALSE )
     }
 
     sites <- lapply( X = sites,
                      FUN = function(x){
-                       seqlevels(x) <- levs
+                       seqlevels(x, pruning.mode="coarse") <- levs
                        return(x)
                        }
                      )

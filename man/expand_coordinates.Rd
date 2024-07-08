@@ -8,7 +8,7 @@ expand_coordinates(
   site.list,
   seq.len = 50,
   genome.obj,
-  current.start = 3,
+  current.start = 1,
   tsd = 5
 )
 }
@@ -19,7 +19,8 @@ expand_coordinates(
 
 \item{genome.obj}{The genome object of interest.}
 
-\item{current.start}{The position in the target site duplication currently described by start. This is used for centering the site coordinates.}
+\item{current.start}{The position in the target site duplication currently described by start.
+This is used for centering the site coordinates.}
 
 \item{tsd}{The total length of the target site duplication. This is used for centering the site coordinates.}
 }
@@ -27,5 +28,5 @@ expand_coordinates(
 A GRanges object containing the expanded genomic coordinates.
 }
 \description{
-Expands the site coordinates a defined amount.
+Expands site coordinates by a defined amount.
 }

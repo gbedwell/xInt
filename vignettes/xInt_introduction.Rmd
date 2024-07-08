@@ -57,18 +57,17 @@ This loads the <code>sites</code> object, which is a list of GRanges objects. Ea
 head(sites)[1:2]
 ```
 
-Most of the time, datasets will need to be imported from disk. To do this, something like the following will work for the vast majority of cases:
+Most of the time, datasets will need to be imported from disk. To do this, something like the following will work for most cases:
 
 ```{r, eval=FALSE, import-sites}
 sites <- import_sites(
   path = "~/path/to/bed/files", 
   pattern = ".bed", 
-  genome.obj = BSgenome.Hsapiens.UCSC.hs1, 
-  match.levels = TRUE
+  genome.obj = BSgenome.Hsapiens.UCSC.hs1
   )
 ```
 
-Here, <code>match.levels = TRUE</code> enforces the requirement that all ISs come from chromosomes annotated in the BSgenome object. In the case where e.g., autointegration sites are retained in the imported datasets, those sites should typically be removed prior to performing downstream analyses. If the BSgenome object and the IS datasets have different seqlevel/chromosome annotation styles, the <code>levels.style</code> argument can be used to change the seqlevels of the ISs to match the BSgenome object. See the <code>GenomeInfoDb::seqlevelsStyle()</code> documentation for more information.
+Here, providing a BSgenome object enforces the requirement that all ISs come from chromosomes annotated in the BSgenome object. In instances where e.g., autointegration sites or reads mapped to plasmid sequences are retained in the imported datasets, those sites should typically be removed prior to performing downstream analyses. If the BSgenome object and the IS datasets have different seqlevel/chromosome annotation styles, the <code>levels.style</code> argument can be used to change the seqlevels of the ISs to match the BSgenome object. See the <code>GenomeInfoDb::seqlevelsStyle()</code> documentation for more information.
 
 If you're used to working with BED files, you'll notice that GRanges have only a single coordinate given for IS positions, where BED files have 2. This is because BED files are half-closed coordinates (and 0-based), where the end coordinate is not included in the range itself (see [this](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) for more information). GRanges, on the other hand are (1-based) full-closed, meaning that both the start and the end coordinates are included in the range. Both coordinate systems describe the same single nucleotide position in the genome.
 
@@ -76,67 +75,77 @@ If you're used to working with BED files, you'll notice that GRanges have only a
 
 In some instances, uninfected control(s) may have been included in the experimental setup and sequenced alongside IS libraries derived from infected cells. In the event that any ISs are identified in the uninfected control samples, it is pertinent to remove those from the infected samples, should they be present. Doing this reduces the presence of potential artifacts in the analyzed datasets.
 
-Given the names or index positions of the uninfected datasets in <code>sites</code>, artifacts can be removed using <code>subtract_uninfected_sites()</code>:
+Given the names or index positions of the uninfected datasets in <code>sites</code>, artifacts can be removed using <code>subtract_uninfected()</code>:
 
 ```{r subtract-sites}
 uninf.id <- names(sites)[ grepl( pattern = "C", x = names(sites) ) ]
 
-sub.sites <- subtract_uninfected_sites(
+sub.sites <- subtract_uninfected(
   site.list = sites,
   uninfected.datasets = uninf.id
 )
 ```
 
-The output of this function is an object of the same type as <code>sites</code> where the spurious ISs have been subtracted from each of the other datasets and the uninfected datasets have been removed. Looking at the size of each of the IS datasets before and after subtraction indicates that potential artifacts were present in many of the imported datasets.
+The output of this function is an object of the same type as <code>sites</code> where the spurious ISs have been subtracted from each of the other datasets and the uninfected datasets have been removed from <code>site.list</code>. Looking at the size of each of the IS datasets before and after subtraction indicates that potential artifacts were present in many of the imported datasets.
 
 ```{r}
+# Before subtraction
 do.call( c, lapply( sites[ !names(sites) %in% uninf.id ], length ) )
+# After subtraction
 do.call( c, lapply( sub.sites, length ) )
 ```
 
 ## Importing Features
 
-There is no special xInt function to import genomic features, as <code>rtracklayer::import()</code> works just fine. The only word of caution is this: for making an xInt object (see below), the imported feature annotations must have a metadata column that corresponds to an identifier for each feature. For annotations like genes, this is no problem. Gene names are often included alongside genomic coordinates in the annotation file and are automatically imported by <code>import()</code> for standard filetypes (e.g., BED files). Other features, however, might be nameless. In these instances, the requisite metadata column should in added manually. An example of this is shown below in the creation of the metadata column "name2". This column is created for example purposes only.
+There is no special xInt function to import genomic features, as <code>rtracklayer::import()</code> works just fine. The only word of caution is this: for making an xIntObject (see below), the imported feature annotations must have a metadata column that corresponds to an identifier for each feature. For annotations like genes, this is no problem. Gene names are often included alongside genomic coordinates in the annotation file and are automatically imported by <code>import()</code> for standard filetypes (e.g., BED files). Other features, however, might be nameless. In these instances, the requisite metadata column should in added manually:
 
-```{r}
-data(feats, package="xInt")
+```{r, eval=FALSE}
+feats <- rtracklayer::import( con = "path/to/features/file" )
+feats$name <- paste0( "Features", seq_along(feats) )
 ```
 
 # xIntObjects
 
 Assessing and comparing the degree of feature overlaps between IS datasets is perhaps the most common IS analysis. In xInt, feature overlaps at both the local (individual features) and global (the entire feature-set) levels are neatly stored in an <code>xIntObject</code>. The function to make these objects, <code>make_xIntObject()</code>, takes several important inputs. These are:
 
-1.  <code>site.list</code> - A list of GRanges objects or a GRangesList object holding IS datasets.
+1.  <code>site.list</code> - A list of GRanges objects or a GRangesList object holding IS coordinates for one or more IS datasets.
 
 2.  <code>features</code> - A GRanges object defining the features-of-interest.
 
-3.  <code>conditions</code> - The experimental conditions under which the datasets were obtained (e.g., wild-type and knockout). The order of the given conditions must match the order that the datasets appear in <code>site.list</code>!
+3.  <code>conditions</code> - The experimental conditions under which the datasets were obtained (e.g., wild-type and knockout). <b>NOTE:</b> The order of the given conditions must match the order that the datasets appear in <code>site.list</code>!
 
 4.  <code>condition.levels</code> - The factor levels corresponding to <code>conditions</code>. There should be one factor level for every unique condition given.
 
 5.  <code>id.col</code> - The name of the identifier column in <code>features</code>.
 
-```{r make-xInt-object}
+To make an xIntObject, something like the following will work:
+
+```{r, eval=FALSE, make-xInt-object}
 x.obj <- make_xIntObject(
   site.list = sub.sites,
   features = feats,
-  conditions = c(rep("A", 2), rep("B", 2)),
+  conditions = c(rep("A", 4), rep("B", 5)),
   condition.levels = c("A", "B"),
   id.col = "name"
 )
 ```
 
+For example purposes, a toy xIntObject is provided with the package:
+
+```{r}
+data(xobj, package="xInt")
+```
+
 To verify that the object made is a valid <code>xIntObject</code>:
 
 ```{r}
-is(x.obj, "xIntObject")
+validObject(xobj)
 ```
 
 xIntObjects themselves are a subclass of the <code>RangedSummarizedExperiment</code> object. As such, all of the accessor functions for RSEs work on xIntObjects. The column data of xIntObjects stores global feature-set overlap information for each dataset in <code>site.list</code>, as well as the corresponding sample name and condition. The row data contains feature information. The accessor functions to access all of this information are visible when examining <code>g.obj</code>. Column data, for instance, is accessible with the <code>colData()</code> function, row data with <code>rowData()</code>, etc.
 
 ```{r}
-x.obj
-colData(x.obj)
+xobj
 ```
 
 ## Comparing Overlaps
@@ -145,10 +154,10 @@ While xIntObjects store overlap information, their creation doesn't perform any 
 
 ### Local Overlaps
 
-Comparison of local overlaps, or differential targeting, is analogous to differential expression or differential peak analysis in other genomic contexts. xInt relies internally on the limma-voom pipeline to assess differential targeting, the running which is done behind the scenes in <code>local_comparisons()</code>. Note that by default, xInt relies exclusively on library size normalization and does not perform any additional normalization steps (e.g., TMM, RLE, or UQ normalization). However, additional normalization routines can be performed in <code>local_comparisons()</code> with the <code>norm_method</code> argument. See the <code>edgeR::calcNormFactors()</code> documentation for more information. In addition, <code>local_comparisons()</code> by default returns contrast fits. That is, pairwise comparisons between all unique conditions in the xInt object.
+Comparison of local overlaps, or differential targeting, is analogous to differential expression or differential peak analysis in other genomic contexts. xInt relies internally on the limma-voom pipeline to assess differential targeting, the running of which is done behind the scenes in <code>local_comparisons()</code>. Note that by default, xInt relies exclusively on library size normalization and does not perform any additional normalization steps (e.g., TMM, RLE, or UQ normalization). However, additional normalization routines can be performed in <code>local_comparisons()</code> with the <code>norm_method</code> argument. See the <code>edgeR::calcNormFactors()</code> documentation for more information. In addition, <code>local_comparisons()</code> by default returns contrast fits. These are pairwise comparisons between all unique conditions in the xInt object.
 
 ```{r local-comparisons}
-loc.comp <- local_comparisons( xint.obj = x.obj, return.contrasts = TRUE, plot = TRUE )
+loc.comp <- local_comparisons( xint.obj = xobj, return.contrasts = TRUE, plot = FALSE )
 ```
 
 To examine the fit outputs, limma functions can be used. To get the overall summary of targeting differences between each contrast,
@@ -163,7 +172,7 @@ More granular information for each contrast can be gleaned with <code>topTable()
 head( topTable( loc.comp, coef = 1, number = Inf, p.value = 1 ) )
 ```
 
-Here, the <code>coef</code> argument denote which contrasts to show, and correspond to the column/level order in <code>loc.comp$contrasts</code> or <code>summary(decideTests())</code>. Above, I show the results for the WT-CKO contrast. These results can be further filtered either by changing the p-value threshold in <code>topTable()</code> or by assigning the <code>topTable()</code> results to a global variable and manipulating it like a standard data frame.
+Here, the <code>coef</code> argument denotes which contrast to show, and corresponds to the column/level order in <code>loc.comp$contrasts</code> or <code>summary(decideTests())</code>. These results can be further filtered either by changing the p-value threshold in <code>topTable()</code> or by assigning the <code>topTable()</code> results to a global variable and manipulating it like a standard data frame.
 
 
 ### Global Overlaps
@@ -171,25 +180,31 @@ Here, the <code>coef</code> argument denote which contrasts to show, and corresp
 Global comparisons have long been the primary analysis done on IS data. The way in which these analyses have been done varies from lab-to-lab and study-to-study. The xInt function <code>global_comparisons()</code> operates on the log-cpm of the number of feature-overlapping sites for each unique condition. This serves to 1) normalize the number of overlapping sites for library size and 2) transform the count data to better satisfy the normal assumptions of the t-test. Each unique pairwise comparison is then made and the results are concatenated.
 
 ```{r global-comparisons}
-global_comparisons( xint.obj = x.obj )
+global_comparisons( xint.obj = xobj )
 ```
 
 # Other Analyses
 
 ## Sequence Logos
 
-Sequence logos generated in xInt take as input the same <code>site.list</code> used to make the <code>xIntObject</code>. The IS coordinates are centered and expanded a defined number of nucleotides. Centering of the IS coordinates requires definition of both the size of the target site duplication and the current position of the TSD occupied by the current start coordinate the ISs in <code>site.list</code>. These values default to <code>tsd = 5</code> and <code>current.start = 3</code>. The <code>return.plot</code> argument denotes whether or not a plot is returned. If <code>return.plot = FALSE</code>, the consensus matrix for each dataset is returned.
+Sequence logos generated in xInt take as input the same <code>site.list</code> used to make the <code>xIntObject</code>. The IS coordinates are centered and expanded a defined number of nucleotides. Centering of the IS coordinates requires definition of both the size of the target site duplication and the current position of the TSD represented by the start coordinates in <code>site.list</code>. These values default to <code>tsd = 5</code> and <code>current.start = 3</code>. The <code>return.plot</code> argument denotes whether or not a plot is returned. If <code>return.plot = FALSE</code>, the consensus matrix for each dataset is returned.
 
-<code>patchwork::wrap_plots()</code>
+For example purposes, xInt provides a longer version of dataset A1.
+
+```{r, load-sites2}
+data(sites2, package="xInt")
+```
 
 ```{r, logos, message=FALSE, warning=FALSE}
 make_logo( 
-  site.list = sub.sites[c(1,3)], 
+  site.list = sites2, 
   seq.len = 24,
   genome.obj = BSgenome.Hsapiens.UCSC.hs1,
   return.plot = TRUE
   )
 ```
+
+The generated logo is centered on the middle position of the TSD, which, in this case, spans positions 0-4. When multiple datasets are provided in <code>site.list</code>, a list of plots is returned. These can be nicely wrapped using <code>patchwork::wrap_plots()</code>.
 
 ## Free Energy of Transitions
 
@@ -197,7 +212,7 @@ Calculation of the free energy of B-to-A transitions takes very similar argument
 
 ```{r, dG, message=FALSE}
 calculate_dG( 
-  site.list = sub.sites[c(1,3)], 
+  site.list = sites2, 
   step.len = 50,
   genome.obj = BSgenome.Hsapiens.UCSC.hs1,
   return.plot = TRUE
@@ -209,8 +224,10 @@ calculate_dG(
 The <code>feature_density()</code> function calculates the number of given features within a particular distance of each IS. When <code>average = TRUE</code>, the average feature density value across all ISs is returned for each dataset. Otherwise, for each dataset, a vector of counts corresponding to the number of features within the defined distance of each IS is returned.
 
 ```{r, feature-density}
+feats <- rowRanges(xobj)
+
 feature_density(
-  site.list = sub.sites,
+  site.list = sites2,
   features = feats,
   win.size = 1E6,
   average = TRUE
@@ -223,7 +240,7 @@ Meta-feature plots summarize the relative position of ISs across features-of-int
 
 ```{r, meta-feature}
 rp <- relative_positions(
-  site.list = sub.sites[c(1,3)],
+  site.list = sites2,
   features = feats,
   bins = NULL
 )
@@ -235,7 +252,7 @@ The second bins the data into percentiles across all features-of-interest and re
 
 ```{r}
 relative_positions(
-  site.list = sub.sites[c(1,3)],
+  site.list = sites2,
   features = feats,
   bins = 10
 )

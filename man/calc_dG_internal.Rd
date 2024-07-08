@@ -2,7 +2,7 @@
 % Please edit documentation in R/calc_dG_internal.R
 \name{calc_dG_internal}
 \alias{calc_dG_internal}
-\title{Free Energy Internal Function}
+\title{calculate_dG Internal Function}
 \usage{
 calc_dG_internal(seqs, vals, len)
 }
@@ -18,4 +18,5 @@ A numeric vector of row means.
 }
 \description{
 Called within calculate_dG().
+Performs the dG calculations across the provided sequences.
 }

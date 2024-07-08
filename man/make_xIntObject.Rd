@@ -10,25 +10,50 @@ make_xIntObject(
   conditions,
   condition.levels,
   min.overlap = 1L,
-  id.col = "name"
+  id.col = "name",
+  ...
 )
 }
 \arguments{
-\item{site.list}{The list of integration site datasets}
+\item{site.list}{A list of GRanges objects or a GRangesList holding IS coordinates.}
 
-\item{features}{The feature-set of interest.}
+\item{features}{A GRanges object for the feature-set of interest.}
 
-\item{conditions}{The infection condition for each dataset. Must be same length as site.list.}
+\item{conditions}{The infection condition for each dataset.
+Must be same length as site.list.}
 
-\item{condition.levels}{The factor levels of conditions. Length should be the number of unique conditions.}
+\item{condition.levels}{The factor levels of conditions.
+All entries should be present in conditions.
+Length should be the number of unique conditions.}
 
-\item{min.overlap}{The minimum amount of overlap to count two regions as overlapping}
+\item{min.overlap}{The minimum amount of overlap to count two regions as overlapping.
+Defaults to 1.}
 
-\item{id.col}{The ID column in the features GRanges object. Default "name".}
+\item{id.col}{The ID column in the features GRanges object.
+Must be provided.
+Default "name".}
+
+\item{...}{Used for adding additional columns to the object column data.
+Automatically converted to a factor.
+Intended for batch information, etc.}
 }
 \value{
-A SummarizedExperiment object containing local and global feature overlap information for each dataset in site.list.
+A SummarizedExperiment object containing local and global feature overlap
+information for each dataset in site.list.
 }
 \description{
-Creates a ranged summarized experiment object compatible with other xInt functions. Stores summary information for each sample in column data. Range information is stored in row data.
+Creates a ranged summarized experiment object compatible with other xInt functions.
+Stores summary and global information for each sample in column data.
+Range information is stored in row data.
+}
+\examples{
+data(sites)
+sites <- sites[!names(sites) \%in\% "C1"]
+data(xobj)
+feats <- rowRanges(xobj)
+make_xIntObject(site.list = sites,
+               features = feats,
+               conditions = c(rep("A",4),rep("B",5)),
+               condition.levels = c("A","B"))
+
 }

@@ -7,7 +7,7 @@
 subtract_mask(reference, mask)
 }
 \arguments{
-\item{reference}{GRanges object corresponding to the regions-of-interest.}
+\item{reference}{GRanges object corresponding to the regions/coordinates of interest.}
 
 \item{mask}{GRanges object corresponding to the masked regions.}
 }
@@ -15,5 +15,6 @@ subtract_mask(reference, mask)
 A GRanges object containing the subtracted coordinates.
 }
 \description{
-Subtract masked regions of the genome from ranges of interest. Takes GRanges objects as inputs. Will append all reference metadata columns except the revmap column (if present) to the subtracted ranges.
+Subtract masked regions of the genome from ranges of interest.
+Appends all reference metadata columns except the revmap column (if present) to the subtracted ranges.
 }

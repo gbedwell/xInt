@@ -1,11 +1,12 @@
 #' Expand Coordinates
 #'
-#' Expands the site coordinates a defined amount.
+#' Expands site coordinates by a defined amount.
 #'
 #'@param site.list The list or GRangesList containing the mapped site coordinates.
 #'@param seq.len The length of the returned sequence.
 #'@param genome.obj The genome object of interest.
-#'@param current.start The position in the target site duplication currently described by start. This is used for centering the site coordinates.
+#'@param current.start The position in the target site duplication currently described by start.
+#'This is used for centering the site coordinates.
 #'@param tsd The total length of the target site duplication. This is used for centering the site coordinates.
 #'
 #'@return A GRanges object containing the expanded genomic coordinates.
@@ -13,7 +14,7 @@
 #'@import methods
 #'@import GenomicRanges
 #'
-expand_coordinates <- function( site.list, seq.len = 50, genome.obj, current.start = 3, tsd = 5 ){
+expand_coordinates <- function( site.list, seq.len = 50, genome.obj, current.start = 1, tsd = 5 ){
 
   if( seq.len %% 2 != 0 ){
     warning("seq.len cannot be odd. Subtracting 1 from seq.len.")
@@ -41,6 +42,9 @@ expand_coordinates <- function( site.list, seq.len = 50, genome.obj, current.sta
                 }
   )
 
-  ex <- as( ex, "GRangesList" )
+  if( is( site.list, "GRangesList" ) ){
+    ex <- as( ex, "GRangesList" )
+  }
+
   return( ex )
 }

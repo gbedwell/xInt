@@ -1,23 +1,26 @@
 #' Split Random Datasets
 #'
-#' Splits a list a large random fragment position datasets by chromosome subsets and combines matching subsets from all datasets into a single object.
+#' Splits a list of large random fragment position datasets by chromosome subsets and combines
+#' matching subsets from all datasets into a single object.
 #'
-#'@param ds.list A list of random fragment position datasets.
+#'@param p.list A list of datasets holding the positions of random fragments.
 #'@param genome.obj The BSgenome object of interest.
 #'@param n.cores The number of cores to use.
 #'@param n.split The number of chromosome subsets to generate.
 #'@param directory.path The path of the output directory.
 #'
-#'@return Saves to disk compressed RData objects containing random fragment positions for subsets of chromosomes. Note that all saved objects contain a variable of the same name.
+#'@return Saves to disk compressed RData objects containing random fragment positions for subsets of chromosomes.
+#'Note that all saved objects contain a variable of the same name.
+#'
 #'
 #'@import methods
 #'
 #'@export
 #'
-split_random_datasets <- function( ds.list, genome.obj, n.cores = 1, n.split = 5, directory.path = "." ){
+split_random_datasets <- function( p.list, genome.obj, n.cores = 1, n.split = 5, directory.path = "." ){
 
-  if( !is.list( ds.list ) && !is( ds.list, "GRangesList" ) ){
-    stop( "ds.list must be a list of GRanges objects or a GRangesList.",
+  if( !is.list( p.list ) && !is( p.list, "GRangesList" ) ){
+    stop( "p.list must be a list of GRanges objects or a GRangesList.",
           call. = FALSE )
   }
 
@@ -27,7 +30,7 @@ split_random_datasets <- function( ds.list, genome.obj, n.cores = 1, n.split = 5
   ll <- mclapply(
     X = seqs,
     FUN = function(x){
-      tmp <- lapply( X = ds.list,
+      tmp <- lapply( X = p.list,
                      FUN = function(y){
                        y[seqnames(y) %in% x]
                      }

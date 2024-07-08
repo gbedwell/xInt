@@ -9,6 +9,8 @@ feature_density(
   features,
   genome.obj,
   win.size = 1e+06,
+  current.start = 1,
+  tsd = 5,
   min.overlap = 1L,
   average = TRUE,
   remove.outliers = FALSE
@@ -19,19 +21,37 @@ feature_density(
 
 \item{features}{The feature-set of interest. Should be a GRanges object.}
 
-\item{genome.obj}{The genome object of interest.}
+\item{genome.obj}{The BSgenome object of interest. Used to assess outlier regions.}
 
 \item{win.size}{The total distance around each site.}
 
+\item{current.start}{The position in the target site duplication currently described by start.
+This is used for centering the IS coordinates.}
+
+\item{tsd}{The total length of the target site duplication. This is used for centering the IS coordinates.}
+
 \item{min.overlap}{The minimum amount of overlap required to call two regions overlapping. Defaults to 1L.}
 
-\item{average}{Boolean. Whether or not to average the number of features within win.size for each dataset. Defaults to TRUE and returns a single value for each dataset.}
+\item{average}{Boolean. Whether or not to average the number of features within win.size for each dataset.
+Defaults to TRUE and returns a single value for each dataset.}
 
-\item{remove.outliers}{Boolean. Whether or not to remove regions that, when expanded, violate genome boundaries. Defaults to FALSE.}
+\item{remove.outliers}{Boolean. Whether or not to remove regions that, when expanded, violate genome boundaries.
+Defaults to FALSE.}
 }
 \value{
-If average = TRUE, a single vector containing the average feature density value for each dataset. Otherwise, a list of numeric vectors for each dataset containing the number of features within each window.
+If average = TRUE, a single vector containing the average feature density value for each dataset.
+Otherwise, a list of numeric vectors for each dataset containing the number of features within each window.
 }
 \description{
 Calculates the number of features within a defined distance of each integration site.
+}
+\examples{
+library(BSgenome.Hsapiens.UCSC.hs1)
+data(sites)
+data(xobj)
+feats <- rowRanges(xobj)
+feature_density(site.list = sites,
+               features = feats,
+               genome.obj = Hsapiens)
+
 }

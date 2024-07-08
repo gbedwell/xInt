@@ -8,9 +8,9 @@ calculate_dG(
   site.list,
   step.len = 50,
   genome.obj,
-  current.start = 3,
+  current.start = 1,
   tsd = 5,
-  return.plot = FALSE
+  collapse = TRUE
 )
 }
 \arguments{
@@ -20,15 +20,25 @@ calculate_dG(
 
 \item{genome.obj}{The genome object of interest.}
 
-\item{current.start}{The position in the target site duplication currently described by start. This is used for centering the site coordinates.}
+\item{current.start}{The position in the target site duplication currently described by start.
+This is used for centering the site coordinates.}
 
-\item{tsd}{The total length of the target site duplication. This is used for centering the site coordinates.}
+\item{tsd}{The total length of the target site duplication.
+This is used for centering the site coordinates.}
 
-\item{return.plot}{Boolean. Whether or not to return diagnostic plots for each dataset in site.list instead of values. Defaults to FALSE.}
+\item{collapse}{Boolean. Whether or not to collapse the output into a single data.frame. Defaults to TRUE.}
 }
 \value{
-A list of data frames containing the sequence position and the corresponding ∆G value for each element in site.list.
+A list of data frames containing the sequence position and the corresponding dG value for each element in site.list.
 }
 \description{
-Calculates the free energy change upon B to A transition of DNA. Relies on trimeric dG values calculated by Tolstorukov, et al. (DOI: 10.1016/S0006-3495(01)75973-5). Utilizes a 3 bp sliding window with a 1 bp step across the sequence of interest.
+Calculates the free energy change upon B to A transition of DNA.
+Relies on trimeric dG values calculated by Tolstorukov, et al. (DOI: 10.1016/S0006-3495(01)75973-5).
+Utilizes a 3 bp sliding window with a 1 bp step across the sequence of interest.
+}
+\examples{
+library(BSgenome.Hsapiens.UCSC.hs1)
+data(sites2)
+calculate_dG( site.list = sites2, genome.obj = Hsapiens )
+
 }

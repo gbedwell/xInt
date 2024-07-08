@@ -1,15 +1,24 @@
 #' Calculate B-to-A deltaG
 #'
-#' Calculates the free energy change upon B to A transition of DNA. Relies on trimeric dG values calculated by Tolstorukov, et al. (DOI: 10.1016/S0006-3495(01)75973-5). Utilizes a 3 bp sliding window with a 1 bp step across the sequence of interest.
+#' Calculates the free energy change upon B to A transition of DNA.
+#' Relies on trimeric dG values calculated by Tolstorukov, et al. (DOI: 10.1016/S0006-3495(01)75973-5).
+#' Utilizes a 3 bp sliding window with a 1 bp step across the sequence of interest.
 #'
 #'@param site.list The list or GRangesList containing the mapped site coordinates.
 #'@param step.len The target length of the returned vector of dG values.
 #'@param genome.obj The genome object of interest.
-#'@param current.start The position in the target site duplication currently described by start. This is used for centering the site coordinates.
-#'@param tsd The total length of the target site duplication. This is used for centering the site coordinates.
-#'@param return.plot Boolean. Whether or not to return diagnostic plots for each dataset in site.list instead of values. Defaults to FALSE.
+#'@param current.start The position in the target site duplication currently described by start.
+#'This is used for centering the site coordinates.
+#'@param tsd The total length of the target site duplication.
+#'This is used for centering the site coordinates.
+#'@param collapse Boolean. Whether or not to collapse the output into a single data.frame. Defaults to TRUE.
 #'
-#'@return A list of data frames containing the sequence position and the corresponding ∆G value for each element in site.list.
+#'@return A list of data frames containing the sequence position and the corresponding dG value for each element in site.list.
+#'
+#'@examples
+#'library(BSgenome.Hsapiens.UCSC.hs1)
+#'data(sites2)
+#'calculate_dG( site.list = sites2, genome.obj = Hsapiens )
 #'
 #'@import ggplot2
 #'@import GenomicRanges
@@ -18,9 +27,12 @@
 #'@export
 #'
 calculate_dG <- function( site.list, step.len = 50, genome.obj,
-                          current.start = 3, tsd = 5, return.plot = FALSE ){
+                          current.start = 1, tsd = 5, collapse = TRUE ){
 
-  check_sites( site.list )
+  if( !validObject( site.list ) ){
+    stop( "site.list is not a valid SiteListObject.",
+          call. = FALSE )
+  }
 
   if( step.len %% 2 != 0 ){
     warning( "step.len cannot be odd. Subtracting 1 from step.len.",
@@ -88,30 +100,11 @@ calculate_dG <- function( site.list, step.len = 50, genome.obj,
                 )
 
 
-  if( isFALSE( return.plot ) ){
-    return(dG)
-  } else{
-    dG.p <- lapply( X = seq_along( dG ),
-                    FUN = function(x){
+  if( isTRUE( collapse ) ){
+    dG <- Map( function(x, y) { cbind( x, dataset = y ) }, dG, names( dG ) )
+    dG <- do.call( rbind, dG )
+    rownames( dG ) <- NULL
+  }
 
-                      dat <- dG[[x]]
-
-                      ggplot( data = dat, aes( x = position, y = dG ) ) +
-                        # geom_rect(aes(xmin=0, xmax=tsd-1, ymin=0, ymax=1),
-                        #           alpha=0.1,
-                        #           fill="gray80",
-                        #           color="black",
-                        #           linewidth=0.1) +
-                        geom_line(linewidth = 0.75) +
-                        geom_point(size = 1.5) +
-                        theme_bw() +
-                        theme(axis.text = element_text(size=14),
-                              axis.title = element_text(size=16)) +
-                        scale_y_continuous( limits = c( 0, 1 ) ) +
-                        labs( x = "Position", y = "deltaG", title=names(dG)[x] )
-                      }
-                    )
-
-    return( dG.p)
-    }
+  return( dG )
 }

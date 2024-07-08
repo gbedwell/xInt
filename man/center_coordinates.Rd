@@ -4,14 +4,16 @@
 \alias{center_coordinates}
 \title{Center Coordinates}
 \usage{
-center_coordinates(site.list, current.start = 3, tsd = 5, genome.obj)
+center_coordinates(site.list, current.start = 1, tsd = 5, genome.obj)
 }
 \arguments{
 \item{site.list}{The list or GRangesList containing the mapped site coordinates.}
 
-\item{current.start}{The position in the target site duplication currently described by start. This is used for centering the site coordinates.}
+\item{current.start}{The position in the target site duplication currently described by start.
+This is used for centering the site coordinates.}
 
-\item{tsd}{The total length of the target site duplication. This is used for centering the site coordinates.}
+\item{tsd}{The total length of the target site duplication.
+This is used for centering the site coordinates.}
 
 \item{genome.obj}{The genome object of interest.}
 }
@@ -19,5 +21,6 @@ center_coordinates(site.list, current.start = 3, tsd = 5, genome.obj)
 A GRanges object containing the centered genomic coordinates.
 }
 \description{
-Centers the input site coordinates relative to the defined target site duplication. In the instance of odd TSDs, returns a 1 bp interval. For even TSDs, a 2 bp interval is returned.
+Centers the input site coordinates relative to the defined target site duplication.
+In the case of odd TSDs, returns a 1 bp interval. For even TSDs, a 2 bp interval is returned.
 }

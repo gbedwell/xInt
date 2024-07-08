@@ -5,7 +5,7 @@
 \alias{sites}
 \title{Example Integration Site Data}
 \format{
-An object of class \code{list} of length 9.
+An object of class \code{list} of length 10.
 }
 \source{
 Datasets A1-A4 are described in 10.1128/mBio.02254-20.

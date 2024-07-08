@@ -9,11 +9,18 @@ global_comparisons(xint.obj, p.adjust.method = "BH")
 \arguments{
 \item{xint.obj}{The xInt object of interest.}
 
-\item{p.adjust.method}{The p-value adjustment method. Defaults to "BH". See \if{html}{\out{<code>}}stats::p.adjust()\if{html}{\out{</code>}} for more information.}
+\item{p.adjust.method}{The p-value adjustment method.
+Defaults to "BH". See \if{html}{\out{<code>}}stats::p.adjust()\if{html}{\out{</code>}} for more information.}
 }
 \value{
-A data frame containing results of each comparison made.
+A data frame containing the results of each comparison.
 }
 \description{
-Compare global integration targeting preferences into a given feature-set between infection conditions. Comparisons are made using a two-sample t-test.
+Compare global integration targeting preferences into a given feature-set between infection conditions.
+Comparisons are made using a two-sample t-test.
+}
+\examples{
+data(xobj)
+global_comparisons(xint.obj = xobj)
+
 }

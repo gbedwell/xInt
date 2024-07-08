@@ -5,7 +5,7 @@
 \alias{xobj}
 \title{Example xIntObject}
 \format{
-An object of class \code{xIntObject} with 0 rows and 9 columns.
+An object of class \code{xIntObject} with 41488 rows and 9 columns.
 }
 \source{
 Created with make_xIntObject().

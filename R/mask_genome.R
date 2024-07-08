@@ -1,10 +1,12 @@
 #' Create Genome Mask
 #'
-#' Enumerates regions of the genome that cannot be uniquely mapped to given a particular experimental approach (genome fragmentation method, read length, etc.).
+#' Enumerates regions of the genome that cannot be uniquely mapped
+#' given a particular experimental approach (genome fragmentation method, read length, etc.).
 #'
 #'@param mapped.positions A GRanges object containing the positions of mapped fragments.
 #'@param genome.obj The BSgenome object of interest.
-#'@param ignore.chromosomes Chromosomes to be ignored in masking. These chromosomes are not included in the final output.
+#'@param ignore.chromosomes Chromosomes to be ignored in masking.
+#'These chromosomes are not included in the final output.
 #'@param n.cores The number of cores to use for parallel computing.
 #'
 #'@return A GRanges object containing the masked regions of the genome.
@@ -22,6 +24,8 @@ mask_genome <- function( mapped.positions,
                          genome.obj,
                          ignore.chromosomes = NULL,
                          n.cores = 1 ){
+
+  # TO-DO: replace mclapply() with e.g. parLapply()
 
   t1 <- Sys.time()
 
@@ -51,7 +55,8 @@ mask_genome <- function( mapped.positions,
   lvls <- as.character( unique( seqnames( frags ) ) )
 
   if( n.cores < length( lvls ) ){
-    warning( "n.cores is less than the number of chromosomes. This may cause forking issues due to insufficient memory.",
+    warning( "n.cores is less than the number of chromosomes.
+             This may cause forking issues due to insufficient memory.",
              "\n" )
     }
 

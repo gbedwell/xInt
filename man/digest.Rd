@@ -4,10 +4,10 @@
 \alias{digest}
 \title{Simulate Restriction Digestion}
 \usage{
-digest(string.list, re.sites, cut.after = 1)
+digest(seqs.list, re.sites, cut.after = 1)
 }
 \arguments{
-\item{string.list}{The output of get_chromosome_seqs() or a comparable list of DNAStrings.}
+\item{seqs.list}{The output of get_chromosome_seqs() or a comparable list of DNAStrings.}
 
 \item{re.sites}{A character vector of restriction enzyme recognition sequences.}
 
@@ -17,5 +17,7 @@ digest(string.list, re.sites, cut.after = 1)
 A list of cut site positions across every chromosome for every defined recognition sequence.
 }
 \description{
-Simulate restriction digestion of DNA using arbitrary restriction enzymes. DNA to be digested is input as a list of DNAStrings. Restriction sites are defined in a character vector holding the target recognition sequences.
+Simulate restriction digestion of DNA using arbitrary restriction enzymes.
+DNA to be digested is input as a list of DNAStrings.
+Restriction sites are defined in a character vector holding the target recognition sequences.
 }

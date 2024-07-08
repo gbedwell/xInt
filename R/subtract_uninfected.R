@@ -1,9 +1,12 @@
 #' Subtract Uninfected Sites
 #'
-#' Subtract integration sites spuriously obtained from uninfected control samples. Uninfected sites are collapsed into a single
+#' Subtract integration sites spuriously obtained from uninfected control samples.
+#' Uninfected sites are collapsed into a single
 #'
 #'@param site.list A list of GRanges objects or a GRangesList containing integration site datasets.
-#'@param uninfected.datasets A character vector containing the names of uninfected datasets in site.list or a numeric vector containing the indeces of uninfected datasets in site.list. These datasets are removed in the output when return.uninfected = FALSE.
+#'@param uninfected.datasets A character vector containing the names of uninfected datasets in site.list
+#'or a numeric vector containing the indeces of uninfected datasets in site.list.
+#'These datasets are removed in the output when return.uninfected = FALSE.
 #'@param return.uninfected Boolean. Whether or not to return the combined uninfected site coordinates.
 #'
 #'@return A list of GRanges objects or a GRangesList containing the subtracted integration site datasets.
@@ -13,9 +16,14 @@
 #'
 #'@export
 #'
-subtract_uninfected_sites <- function( site.list, uninfected.datasets, return.uninfected = FALSE ){
+subtract_uninfected <- function( site.list,
+                                 uninfected.datasets,
+                                 return.uninfected = FALSE ){
 
-  check_sites( site.list )
+  if( !validObject( site.list ) ){
+    stop( "site.list is not a valid SiteListObject.",
+          call. = FALSE )
+  }
 
   if( !is.character( uninfected.datasets ) ){
     if( is.numeric( uninfected.datasets ) ){
@@ -35,7 +43,7 @@ subtract_uninfected_sites <- function( site.list, uninfected.datasets, return.un
   }
 
 
-  if( return.uninfected ){
+  if( isTRUE( return.uninfected ) ){
     return( spur )
   } else{
     sub.sites <- lapply( X = site.list[ -which( names(site.list) %in% uninfected.datasets ) ],

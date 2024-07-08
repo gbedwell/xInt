@@ -4,7 +4,7 @@
 \alias{save_fasta}
 \title{Save FASTA}
 \usage{
-save_fasta(reads, directory.path, prefix, compress = TRUE)
+save_fasta(reads, directory.path, prefix, paired = TRUE, compress = TRUE)
 }
 \arguments{
 \item{reads}{The output from trim_seqs().}
@@ -13,7 +13,9 @@ save_fasta(reads, directory.path, prefix, compress = TRUE)
 
 \item{prefix}{The file prefix.}
 
-\item{compress}{Logical. Whether or not to compress the output fasta file.}
+\item{paired}{Boolean. Whether or not to save paired-end fasta files.}
+
+\item{compress}{Boolean. Whether or not to compress the output fasta file.}
 }
 \value{
 None
