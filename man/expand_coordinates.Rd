@@ -17,7 +17,11 @@ expand_coordinates(
 
 \item{seq.len}{The length of the returned sequence.}
 
-\item{genome.obj}{The genome object of interest.}
+\item{genome.obj}{The genome object of interest. This is used for checking the validity of
+the centered and expanded coordinates against the genome boundaries.
+Coordinates that violate genome boundaries are removed.
+This is strictly enforced with expanded coordinates because sequence logos, etc.
+require sequences of the same length.}
 
 \item{current.start}{The position in the target site duplication currently described by start.
 This is used for centering the site coordinates.}

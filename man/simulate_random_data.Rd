@@ -11,8 +11,8 @@ simulate_random_data(
   n.sites,
   mean = 400,
   sd = 100,
-  min.width = 14,
-  max.distance = 1000,
+  min.width = 10,
+  max.width = 1000,
   max.bp = 150,
   iterations = 1,
   n.cores = 1,
@@ -23,7 +23,8 @@ simulate_random_data(
   compress = TRUE,
   paired = TRUE,
   collapse = TRUE,
-  to.chr.ends = TRUE
+  to.chr.ends = TRUE,
+  U3 = FALSE
 )
 }
 \arguments{
@@ -43,9 +44,9 @@ Can be either a single value or a vector of values.}
 Only used for random fragmentation.}
 
 \item{min.width}{The minimum desired fragment/read length.
-Defaults to 14 bp.}
+Defaults to 10 bp.}
 
-\item{max.distance}{The maximum desired inner distance.
+\item{max.width}{The maximum acceptable fragment length (insert size).
 Defaults to 1000 bp.}
 
 \item{max.bp}{The maximum read length.
@@ -76,6 +77,9 @@ into a single object. Defaults to TRUE.}
 
 \item{to.chr.ends}{Boolean. Whether or not to treat chromosome ends as capable of generating
 potentially mappable fragments. Defaults to TRUE.}
+
+\item{U3}{Boolean. Whether or not mapping is done from the U3 end (5' LTR relative to top-strand).
+Defaults to FALSE.}
 }
 \value{
 Default behavior will save paired R1 and R2 fasta files to disk that mimic NGS data.

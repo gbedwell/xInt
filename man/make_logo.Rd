@@ -6,7 +6,7 @@
 \usage{
 make_logo(
   site.list,
-  seq.len = 30,
+  seq.len = 24,
   genome.obj,
   ignore.strand = FALSE,
   current.start = 1,

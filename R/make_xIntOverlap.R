@@ -1,4 +1,4 @@
-#' Make xIntObject
+#' Make xIntOverlap Object
 #'
 #' Creates a ranged summarized experiment object compatible with other xInt functions.
 #' Stores summary and global information for each sample in column data.
@@ -17,7 +17,9 @@
 #'Must be provided.
 #'Default "name".
 #'@param ... Used for adding additional columns to the object column data.
-#'Automatically converted to a factor.
+#'Non-numeric and non-double vectors are automatically converted to a factor.
+#'Numeric and double vectors are left as-is.
+#'If numeric or double vectors are intended to be factors, enter them wrapped in factor().
 #'Intended for batch information, etc.
 #'
 #'@return A SummarizedExperiment object containing local and global feature overlap
@@ -28,7 +30,7 @@
 #'sites <- sites[!names(sites) %in% "C1"]
 #'data(xobj)
 #'feats <- rowRanges(xobj)
-#'make_xIntObject(site.list = sites,
+#'make_xIntOverlap(site.list = sites,
 #'                features = feats,
 #'                conditions = c(rep("A",4),rep("B",5)),
 #'                condition.levels = c("A","B"))
@@ -41,7 +43,7 @@
 #'
 #'@export
 #'
-make_xIntObject <- function( site.list,
+make_xIntOverlap <- function( site.list,
                              features,
                              conditions,
                              condition.levels,
@@ -57,7 +59,7 @@ make_xIntObject <- function( site.list,
   }
 
   if( !validObject( site.list ) ){
-    stop( "site.list is not a valid SiteListObject.",
+    stop( "site.list is not a valid SiteList object.",
           call. = FALSE )
   }
 
@@ -115,7 +117,13 @@ make_xIntObject <- function( site.list,
   other.cols <- list( ... )
 
   for( vec in names( other.cols ) ){
-    frac.overlap[[vec]] <- factor( other.cols[[vec]] )
+    if( is.numeric( other.cols[[vec]] ) ||
+        is.double( other.cols[[vec]] ) ||
+        is.factor( other.cols[[vec]] ) ){
+      frac.overlap[[vec]] <- other.cols[[vec]]
+    } else{
+      frac.overlap[[vec]] <- factor( other.cols[[vec]] )
+    }
   }
 
   feature.counts <- lapply( X = hits,
@@ -140,7 +148,7 @@ make_xIntObject <- function( site.list,
                                     colData = frac.overlap,
                                     rowRanges = features )
 
-  xint.obj <- new( "xIntObject", xint.obj )
+  xint.obj <- new( "xIntOverlap", xint.obj )
 
   return( xint.obj )
 }

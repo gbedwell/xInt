@@ -8,12 +8,13 @@ get_random_coordinates(
   bam.file,
   paired,
   return.reads = FALSE,
+  five.prime = TRUE,
   mapq.cutoff = 0,
   simple.cigar = FALSE,
   tag = "NM",
   tagFilter = list(NM = 0),
   yield.size = NA,
-  sort = FALSE,
+  sort = TRUE,
   prefix,
   write = FALSE
 )
@@ -24,6 +25,8 @@ get_random_coordinates(
 \item{paired}{Boolean. Whether or not the aligned data came from single- or paired-end reads. Defaults to TRUE.}
 
 \item{return.reads}{Boolean. Whether or not to return the start/end coordinates for each read or for each mapped fragment.}
+
+\item{five.prime}{Boolean. Whether or not to only return the 5' read coordinate. Defaults to TRUE.}
 
 \item{mapq.cutoff}{The desired mapq cutoff value.}
 

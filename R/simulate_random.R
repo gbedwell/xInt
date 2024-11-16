@@ -12,9 +12,9 @@
 #'@param sd The target fragment size standard deviation.
 #'Only used for random fragmentation.
 #'@param min.width The minimum desired fragment/read length.
-#'Defaults to 14 bp.
-#'@param max.distance The maximum desired inner distance.
-#'Defaults to 1000 bp.
+#'Defaults to 10 bp.
+#'@param max.width The maximum acceptable fragment length (insert size).
+#'Defaults to 1200 bp.
 #'@param max.bp The maximum read length.
 #'Defaults to 150 bp.
 #'@param iterations The number of random datasets to generate.
@@ -33,6 +33,8 @@
 #'@param to.chr.ends Boolean. Whether or not to treat chromosome ends as capable of generating
 #'potentially mappable fragments. Defaults to TRUE.
 #'@param paired Boolean. Whether or not to save paired-end fasta files.
+#'@param U3 Boolean. Whether or not mapping is done from the U3 end (5' LTR relative to top-strand).
+#'Defaults to FALSE.
 #'
 #'@return Default behavior will save paired R1 and R2 fasta files to disk that mimic NGS data.
 #'The fragment coordinates used to generate those fasta files will be returned as a GRanges object.
@@ -42,7 +44,7 @@
 #'library(BSgenome.Hsapiens.UCSC.hs1)
 #'set.seed(1)
 #'
-#'simulate_random_data(
+#'simulate_random(
 #'  genome.obj = Hsapiens,
 #'  re.sites = NULL,
 #'  n.sites = 10,
@@ -56,7 +58,7 @@
 #'  write.reads = FALSE
 #')
 #'
-#'simulate_random_data(
+#'simulate_random(
 #'  genome.obj = Hsapiens,
 #'  re.sites = "TTAA",
 #'  cut.after = 2,
@@ -76,25 +78,26 @@
 #'
 #'@export
 #'
-simulate_random_data <- function( genome.obj,
-                                  re.sites = NULL,
-                                  cut.after = 1,
-                                  n.sites,
-                                  mean = 400,
-                                  sd = 100,
-                                  min.width = 14,
-                                  max.distance = 1000,
-                                  max.bp = 150,
-                                  iterations = 1,
-                                  n.cores = 1,
-                                  write.ranges = FALSE,
-                                  write.reads = TRUE,
-                                  prefix = NULL,
-                                  directory.path = ".",
-                                  compress = TRUE,
-                                  paired = TRUE,
-                                  collapse = TRUE,
-                                  to.chr.ends = TRUE ){
+simulate_random <- function( genome.obj,
+                             re.sites = NULL,
+                             cut.after = 1,
+                             n.sites,
+                             mean = 400,
+                             sd = 100,
+                             min.width = 10,
+                             max.width = 1200,
+                             max.bp = 150,
+                             iterations = 1,
+                             n.cores = 1,
+                             write.ranges = FALSE,
+                             write.reads = TRUE,
+                             prefix = NULL,
+                             directory.path = ".",
+                             compress = TRUE,
+                             paired = TRUE,
+                             collapse = TRUE,
+                             to.chr.ends = TRUE,
+                             U3 = FALSE ){
 
   if( iterations > 1 & length( n.sites ) > 1 ){
     stop( "iterations and length(n.sites) cannot both be > 1.",
@@ -122,9 +125,9 @@ simulate_random_data <- function( genome.obj,
   }
 
   if ( isTRUE( random ) ){
-    if ( missing( mean ) | missing( sd ) )
+    if ( !is.numeric( mean ) | !is.numeric( sd ) )
       stop( "The mean and sd of the sampling distribution must be
-            defined to generate fragments via random fragmentation.",
+            numeric arguments.",
             call. = FALSE )
   }
 
@@ -149,7 +152,8 @@ simulate_random_data <- function( genome.obj,
                                                          genome.obj = genome.obj,
                                                          mean = mean,
                                                          sd = sd,
-                                                         to.chr.ends = to.chr.ends )
+                                                         to.chr.ends = to.chr.ends,
+                                                         U3 = U3 )
 
                        if( write.reads ){
                          message( "Extracting fragment sequences...", "\n" )
@@ -162,7 +166,7 @@ simulate_random_data <- function( genome.obj,
 
                          frag.trim <- trim_seqs( fragments = frag.seqs,
                                                  min.width = min.width,
-                                                 max.distance = max.distance,
+                                                 max.width = max.width,
                                                  max.bp = max.bp )
 
                          message( "Saving FASTA files...", "\n" )

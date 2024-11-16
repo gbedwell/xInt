@@ -97,16 +97,16 @@ do.call( c, lapply( sub.sites, length ) )
 
 ## Importing Features
 
-There is no special xInt function to import genomic features, as <code>rtracklayer::import()</code> works just fine. The only word of caution is this: for making an xIntObject (see below), the imported feature annotations must have a metadata column that corresponds to an identifier for each feature. For annotations like genes, this is no problem. Gene names are often included alongside genomic coordinates in the annotation file and are automatically imported by <code>import()</code> for standard filetypes (e.g., BED files). Other features, however, might be nameless. In these instances, the requisite metadata column should in added manually:
+There is no special xInt function to import genomic features, as <code>rtracklayer::import()</code> works just fine. The only word of caution is this: for making an xIntOverlap object (see below), the imported feature annotations must have a metadata column that corresponds to an identifier for each feature. For annotations like genes, this is no problem. Gene names are often included alongside genomic coordinates in the annotation file and are automatically imported by <code>import()</code> for standard filetypes (e.g., BED files). Other features, however, might be nameless. In these instances, the requisite metadata column should in added manually:
 
 ```{r, eval=FALSE}
 feats <- rtracklayer::import( con = "path/to/features/file" )
 feats$name <- paste0( "Features", seq_along(feats) )
 ```
 
-# xIntObjects
+# xIntOverlap objects
 
-Assessing and comparing the degree of feature overlaps between IS datasets is perhaps the most common IS analysis. In xInt, feature overlaps at both the local (individual features) and global (the entire feature-set) levels are neatly stored in an <code>xIntObject</code>. The function to make these objects, <code>make_xIntObject()</code>, takes several important inputs. These are:
+Assessing and comparing the degree of feature overlaps between IS datasets is perhaps the most common IS analysis. In xInt, feature overlaps at both the local (individual features) and global (the entire feature-set) levels are neatly stored in an <code>xIntObject</code>. The function to make these objects, <code>make_xIntOverlap()</code>, takes several important inputs. These are:
 
 1.  <code>site.list</code> - A list of GRanges objects or a GRangesList object holding IS coordinates for one or more IS datasets.
 
@@ -121,7 +121,7 @@ Assessing and comparing the degree of feature overlaps between IS datasets is pe
 To make an xIntObject, something like the following will work:
 
 ```{r, eval=FALSE, make-xInt-object}
-x.obj <- make_xIntObject(
+x.obj <- make_xIntOverlap(
   site.list = sub.sites,
   features = feats,
   conditions = c(rep("A", 4), rep("B", 5)),

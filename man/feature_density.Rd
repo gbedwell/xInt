@@ -7,7 +7,7 @@
 feature_density(
   site.list,
   features,
-  genome.obj,
+  genome.obj = NULL,
   win.size = 1e+06,
   current.start = 1,
   tsd = 5,

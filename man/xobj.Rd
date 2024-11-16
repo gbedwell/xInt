@@ -3,20 +3,20 @@
 \docType{data}
 \name{xobj}
 \alias{xobj}
-\title{Example xIntObject}
+\title{Example xIntOverlap Object}
 \format{
-An object of class \code{xIntObject} with 41488 rows and 9 columns.
+An object of class \code{xIntObject} of length 1.
 }
 \source{
-Created with make_xIntObject().
+Created with make_xIntOverlap().
 }
 \usage{
 xobj
 }
 \value{
-An xIntObject containing feature counts for the ISs used to create 'sites'.
+An xIntOverlap object containing feature counts for the ISs used to create 'sites'.
 }
 \description{
-An xIntObject.
+An xIntOverlap object.
 }
 \keyword{datasets}

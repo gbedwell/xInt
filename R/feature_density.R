@@ -33,14 +33,14 @@
 #'
 #'@export
 #'
-feature_density <- function( site.list, features,  genome.obj, win.size = 1E6,
+feature_density <- function( site.list, features,  genome.obj = NULL, win.size = 1E6,
                              current.start = 1, tsd = 5, min.overlap = 1L, average = TRUE,
                              remove.outliers = FALSE ){
 
-  if( !validObject( site.list ) ){
-    stop( "site.list is not a valid SiteListObject.",
-          call. = FALSE )
-  }
+  # if( !validObject( site.list ) ){
+  #   stop( "site.list is not a valid SiteListObject.",
+  #         call. = FALSE )
+  # }
 
   cc <- center_coordinates( site.list = site.list,
                             current = current.start,
@@ -52,10 +52,21 @@ feature_density <- function( site.list, features,  genome.obj, win.size = 1E6,
                   expanded <- resize( x, width = win.size, fix = "center", ignore.strand = TRUE )
 
                   if( isTRUE( remove.outliers ) ){
+
+                    if( is.null(genome.obj) ){
+                      stop("genome.obj cannot be NULL if remove.outliers is TRUE.")
+                    }
+
                     outs <- bound_check( fragments = expanded,
                                          genome.obj = genome.obj,
                                          include.lower = TRUE )
+
                     if( length(outs) != 0 ){
+
+                      warning( "Expanded coordinates " , paste(outs, collapse=", "),
+                               " contain out of bounds ranges. These coordinates will be removed.",
+                               call. = FALSE )
+
                       expanded <- expanded[-outs]
                       }
                     }

@@ -12,7 +12,8 @@ local_comparisons(
   norm.method = NULL,
   remove.zeros = TRUE,
   plot = TRUE,
-  return.contrasts = TRUE
+  return.contrasts = TRUE,
+  batch = NULL
 )
 }
 \arguments{
@@ -31,20 +32,29 @@ Used as an input to edgeR's \if{html}{\out{<code>}}filterByExpr()\if{html}{\out{
 \item{norm.method}{If NULL, only library size normalization is performed.
 Otherwise, must be one of the valid options in edgeR's \if{html}{\out{<code>}}calcNormFactors()\if{html}{\out{</code>}}.}
 
-\item{remove.zeros}{Boolean. Whether or not to remove rows with all zeros from the count matrix. Defaults to TRUE.}
+\item{remove.zeros}{Boolean. Whether or not to remove rows with all zeros from the count matrix.
+Defaults to TRUE.}
 
-\item{plot}{Boolean. Whether or not to output diagnostic plots related to sample biases and mean-variance modeling.
+\item{plot}{Boolean. Whether or not to output diagnostic plots related to
+sample biases and mean-variance modeling.
 Defaults to TRUE.}
 
 \item{return.contrasts}{Boolean. Whether or not to return the contrast fits. Defaults to TRUE.
 If FALSE, the lmFit() output is returned after empirical Bayes moderation.}
+
+\item{batch}{A character vector of column names in the colData of the xIntObject containing relevant
+batch information.}
 }
 \value{
-A MArrayLM object containing the results of feature-wise linear fits.
+An MArrayLM object containing the results of feature-wise linear fits.
 }
 \description{
 Perform per-feature integration targeting comparisons within a given feature-set.
 This is analogous to differential expression analyses for e.g., RNA-seq and uses the same machinery in limma.
+The design matrix constructed by this function is model.matrix(~0 + condition).
+If included in the function call, batch variables are also incorporated: model.matrix(~0 + condition + batch).
+This design allows intuitive construction of contrasts and should be amenable to
+standard integration site analyses.
 The output object can be further analyzed using other limma functions,
 such as \if{html}{\out{<code>}}decideTests()\if{html}{\out{</code>}} and \if{html}{\out{<code>}}topTable()\if{html}{\out{</code>}}.
 See the limma documentation for more information.

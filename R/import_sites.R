@@ -5,7 +5,8 @@
 #'@param path The path to the mapped integration site datasets.
 #'Ideally, the path should only contain the IS datasets of interest.
 #'@param files A character vector of file names to import.
-#'Allows flexibility if not all datasets are in the same path.
+#'Allows flexibility if not all datasets are in the same path or
+#'if not all files in a given directory are of interest.
 #'Should not be used if <code>path</code> is defined.
 #'@param pattern The extension of the integration site dataset files. Defaults to ".bed".
 #'@param genome.obj The BSgenome object corresponding to genome of interest.
@@ -20,6 +21,8 @@
 #'Defaults to FALSE.
 #'@param sort Boolean. Whether or not to sort the imported data.
 #' Sorts seqlevels first, then ranges. Ignores strand.
+#'@param rm.string A common string/pattern to remove from all imported filenames.
+#'Defaults to "_sites". Set to NULL to ignore this argument entirely.
 #'
 #'@return A list of GRanges objects or a GRangesList containing mapped integration sites.
 #'
@@ -31,7 +34,8 @@
 #'@export
 #'
 import_sites <- function( path, files, pattern = ".bed", genome.obj = NULL, levels.style = NULL,
-                          keep.metadata = FALSE, return.GRangesList = FALSE, sort = TRUE ){
+                          keep.metadata = FALSE, return.GRangesList = FALSE, sort = TRUE,
+                          rm.string = "_sites" ){
 
   if( !missing( path ) & !missing( files ) ){
     stop( "Both 'path' and 'files' cannot be defined.",
@@ -74,10 +78,15 @@ import_sites <- function( path, files, pattern = ".bed", genome.obj = NULL, leve
                      }
                    )
 
-  nn <- gsub( paste( ".*/(.*?)\\", pattern, sep = "" ), "\\1", ff )
+  # nn <- gsub( paste( ".*/(.*?)\\", pattern, sep = "" ), "\\1", ff )
+  nn <- gsub( paste( ".*/(.*?)\\", pattern, "(\\.\\w+)*(\\.\\w+)?$", sep = "" ), "\\1", ff )
+
+  if( !is.null( rm.string ) ){
+    nn <- gsub( rm.string, "", nn )
+  }
 
   if( any( duplicated( nn ) ) ){
-    stop( "Duplicated filenames found. Make sure that all filenames are unique.",
+    stop( "Duplicated names found.",
           "\n",
           "The duplicated filenames are: ", nn[ duplicated( nn ) ], ".",
           call. = FALSE )

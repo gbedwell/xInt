@@ -8,19 +8,21 @@
 #'This is used for centering the site coordinates.
 #'@param tsd The total length of the target site duplication.
 #'This is used for centering the site coordinates.
-#'@param genome.obj The genome object of interest.
+#'@param genome.obj The genome object of interest. When not NULL,
+#'the validity of the new sites are checked against the genome coordinates.
+#'Any centered coordinates that violate genome boundaries are removed.
 #'
 #'@return A GRanges object containing the centered genomic coordinates.
 #'
 #'@import methods
 #'@import GenomicRanges
 #'
-center_coordinates <- function( site.list, current.start = 1, tsd = 5, genome.obj ){
+center_coordinates <- function( site.list, current.start = 1, tsd = 5, genome.obj = NULL ){
 
-  if( !validObject( site.list ) ){
-    stop( "site.list is not a valid SiteListObject.",
-          call. = FALSE )
-  }
+  # if( !validObject( site.list ) ){
+  #   stop( "site.list is not a valid SiteListObject.",
+  #         call. = FALSE )
+  # }
 
   ll <- lapply( X = site.list,
                 FUN = function(x){
@@ -39,19 +41,20 @@ center_coordinates <- function( site.list, current.start = 1, tsd = 5, genome.ob
 
                   centered <- sort( c( plus, minus ), ignore.strand = TRUE )
 
-                  outs <- bound_check( fragments = centered,
-                                       genome.obj = genome.obj,
-                                       include.lower = TRUE )
+                  if( !is.null( genome.obj ) ){
+                    outs <- bound_check( fragments = centered,
+                                         genome.obj = genome.obj,
+                                         include.lower = TRUE )
 
-                  if( length(outs) != 0 ){
+                    if( length(outs) != 0 ){
+                      warning( "Centered coordinates " , paste(outs, collapse=", "),
+                               " contain out of bounds ranges. These coordinates will be removed.",
+                               call. = FALSE )
 
-                    warning( "Centered coordinates " , paste(outs, collapse=", "),
-                             " are out of bounds. These coordinates will be removed.",
-                             call. = FALSE )
-
-                    centered <- centered[-outs]
+                      centered <- centered[-outs]
+                      }
+                    return( centered )
                     }
-                  return( centered )
                   }
                 )
 

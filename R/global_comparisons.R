@@ -20,6 +20,8 @@
 #'
 global_comparisons <- function( xint.obj, p.adjust.method = "BH" ){
 
+  # TO-DO: Add ANOVA followed by Tukey HSD functionality?
+
   if( !validObject( xint.obj ) ){
     stop( "xint.obj is not a valid xIntObject.",
           call. = FALSE )
@@ -53,28 +55,28 @@ global_comparisons <- function( xint.obj, p.adjust.method = "BH" ){
 
   comparisons <- list()
 
-  for( i in seq( 1, ( length( multi.rep ) - 1 ) ) ){
-    for( j in seq( ( i + 1 ), length( multi.rep ) ) ){
-      if( multi.rep[i] != multi.rep[j] ){
-        s1 <- lcpm[ names( lcpm ) == multi.rep[i] ]
-        s2 <- lcpm[ names( lcpm ) == multi.rep[j] ]
-        contrast.name <- paste( multi.rep[i], "-", multi.rep[j], sep = "" )
-        tt <- t.test( x = s1,
-                      y = s2,
-                      alternative = "two.sided",
-                      var.equal = TRUE )
+  if( length( multi.rep ) > 1 ){
+    for( i in seq( 1, ( length( multi.rep ) - 1 ) ) ){
+      for( j in seq( ( i + 1 ), length( multi.rep ) ) ){
+        if( multi.rep[i] != multi.rep[j] ){
+          s1 <- lcpm[ names( lcpm ) == multi.rep[i] ]
+          s2 <- lcpm[ names( lcpm ) == multi.rep[j] ]
+          contrast.name <- paste( multi.rep[i], "-", multi.rep[j], sep = "" )
+          tt <- t.test( x = s1,
+                        y = s2,
+                        alternative = "two.sided",
+                        var.equal = TRUE )
 
-        out <- data.frame(
-          t = tt$statistic,
-          df = tt$parameter,
-          mu1 = tt$estimate[1],
-          mu2 = tt$estimate[2],
-          CI95.lower = tt$conf.int[1],
-          CI95.upper = tt$conf.int[2],
-          p.value = tt$p.value
-        )
+          out <- data.frame(
+            t = tt$statistic,
+            df = tt$parameter,
+            mu1 = tt$estimate[1],
+            mu2 = tt$estimate[2],
+            p.value = tt$p.value
+          )
 
-        comparisons[[contrast.name]] <- out
+          comparisons[[contrast.name]] <- out
+        }
       }
     }
   }
@@ -86,28 +88,34 @@ global_comparisons <- function( xint.obj, p.adjust.method = "BH" ){
           s1 <- lcpm[ names( lcpm ) == multi.rep[i] ]
           s2 <- lcpm[ names( lcpm ) == single.rep[j] ]
           contrast.name <- paste( multi.rep[i], "-", single.rep[j], sep = "" )
-          tt <- t.test( x = s1,
-                        mu = s2,
-                        alternative = "two.sided",
-                        var.equal = TRUE )
+
+          m1 <- mean(s1)
+          n1 <- length(s1)
+          m2 <- mean(s2)
+          n2 <- length(s2)
+
+          se <- sqrt( (1/n1 + 1/n2) * ( (n1-1) * sd(s1)^2 + (n2-1) * 0^2 ) / (n1 + n2 - 2) )
+          df <- n1 + n2 - 2
+          t <- (m1 - m2) / se
 
           out <- data.frame(
-            t = tt$statistic,
-            df = tt$parameter,
-            mu1 = tt$estimate[1],
-            mu2 = tt$null.value,
-            CI95.lower = tt$conf.int[1],
-            CI95.upper = tt$conf.int[2],
-            p.value = tt$p.value
+            t = t,
+            df = df,
+            mu1 = m1,
+            mu2 = m2,
+            p.value = 2 * pt( -abs(t), df )
           )
 
           comparisons[[contrast.name]] <- out
         }
       }
     }
-    warning( "The following datasets cannot be compared: ",
-             paste( single.rep, collapse = ", " ), ".",
-             call. = FALSE )
+
+    if( length( single.rep ) > 1 ){
+      warning( "The following datasets cannot be compared: ",
+               paste( single.rep, collapse = ", " ), ".",
+               call. = FALSE )
+    }
   }
 
   comparisons <- do.call( rbind, comparisons )

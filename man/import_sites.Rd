@@ -12,7 +12,8 @@ import_sites(
   levels.style = NULL,
   keep.metadata = FALSE,
   return.GRangesList = FALSE,
-  sort = TRUE
+  sort = TRUE,
+  rm.string = "_sites"
 )
 }
 \arguments{
@@ -41,6 +42,9 @@ Defaults to FALSE.}
 
 \item{sort}{Boolean. Whether or not to sort the imported data.
 Sorts seqlevels first, then ranges. Ignores strand.}
+
+\item{rm.string}{A common string/pattern to remove from all imported filenames.
+Defaults to "_sites". Set to NULL to ignore this argument entirely.}
 }
 \value{
 A list of GRanges objects or a GRangesList containing mapped integration sites.

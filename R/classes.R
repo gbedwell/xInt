@@ -1,15 +1,15 @@
-#'xIntObject-class
+#'xIntOverlap-class
 #'@examples
 #'data(xobj)
 #'validObject(xobj)
 #'
 #'@import methods
 #'@export
-setClass( "xIntObject",
+setClass( "xIntOverlap",
           contains = "RangedSummarizedExperiment" )
 
 setValidity(
-  "xIntObject",
+  "xIntOverlap",
   function( object ){
 
     if ( !( "counts" %in% assayNames( object ) ) ){
@@ -63,31 +63,79 @@ setValidity(
   }
 )
 
-setClassUnion("SiteList", members = c("list", "GRangesList"))
+#' Constructor for xIntOverlap
+#'
+#' @param counts A matrix containing integer count data with row names for features and column names for samples.
+#' @param colData A DataFrame containing the sample metadata with columns: 'sample', 'total.sites',
+#' 'overlapping.sites','fraction.overlap', and 'condition'.
+#' @param ... Additional arguments passed to the RangedSummarizedExperiment constructor.
+#'
+#' @return An xIntOverlap object.
+#' @export
+xIntOverlap <- function(counts, colData, ...) {
+  # Check that counts is a matrix and contains integers
+  if (!is.matrix(counts) || !is.integer(counts)) {
+    stop("counts must be an integer matrix.")
+  }
 
-setClass( "SiteListObject",
-          contains = "SiteList" )
+  # Check that colData is a DataFrame and has the necessary columns
+  if (!is.data.frame(colData) || !all(c("sample", "total.sites", "overlapping.sites", "fraction.overlap", "condition") %in% names(colData))) {
+    stop("colData must be a DataFrame containing the required columns: sample, total.sites, overlapping.sites, fraction.overlap, condition.")
+  }
+
+  # Ensure the sample names in colData match the column names in counts
+  if (!all(colData$sample == colnames(counts))) {
+    stop("Sample names in colData must match the column names in counts.")
+  }
+
+  # Create a RangedSummarizedExperiment object
+  rse <- RangedSummarizedExperiment(assays = list(counts = counts), colData = colData, ...)
+
+  # Create and return a TestOverlap object
+  new("TestOverlap", rse)
+}
+
+
+#' SiteList-class
+#'
+#' @examples
+#' sites <- SiteList(list(GRanges(seqnames="chr1", ranges=IRanges(start=1, end=100))))
+#' validObject(sites)
+#'
+#' @import methods
+#' @import GenomicRanges
+#' @export
+setClass(
+  "SiteList",
+  slots = list(
+    sites = "ANY"
+  )
+)
 
 setValidity(
-  "SiteListObject",
-  function( object ){
+  "SiteList",
+  function(object) {
+    if (!is(object@sites, "GRangesList") &&
+        !is.list(object@sites)) {
+      return("sites slot must be a GRangesList or a list of GRanges objects.")
+    }
 
-    if( is( object@data, "list" ) ){
-      for( element in object@data ){
-        if( !is( element, "GRanges" ) ){
-          return( "All elements in the list must be GRanges objects." )
-        }
+    if (is.list(object@sites)) {
+      if (!all(sapply(object@sites, function(x) is(x, "GRanges")))) {
+        return("All elements of the list must be GRanges objects.")
       }
     }
 
-    if( is.null( names( object ) ) || length( names( object ) ) != length( object) ){
-      return( "All elements must be named." )
-    }
-
-    return( TRUE )
-
+    return(TRUE)
   }
 )
+
+SiteList <- function(sites) {
+  if (!is(sites, "GRangesList") && !is.list(sites)) {
+    stop("sites must be a GRangesList or a list of GRanges objects.")
+  }
+  new("SiteList", sites = sites)
+}
 
 
 

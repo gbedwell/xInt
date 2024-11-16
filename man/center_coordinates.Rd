@@ -4,7 +4,7 @@
 \alias{center_coordinates}
 \title{Center Coordinates}
 \usage{
-center_coordinates(site.list, current.start = 1, tsd = 5, genome.obj)
+center_coordinates(site.list, current.start = 1, tsd = 5, genome.obj = NULL)
 }
 \arguments{
 \item{site.list}{The list or GRangesList containing the mapped site coordinates.}
@@ -15,7 +15,9 @@ This is used for centering the site coordinates.}
 \item{tsd}{The total length of the target site duplication.
 This is used for centering the site coordinates.}
 
-\item{genome.obj}{The genome object of interest.}
+\item{genome.obj}{The genome object of interest. When not NULL,
+the validity of the new sites are checked against the genome coordinates.
+Any centered coordinates that violate genome boundaries are removed.}
 }
 \value{
 A GRanges object containing the centered genomic coordinates.

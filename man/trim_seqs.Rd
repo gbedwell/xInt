@@ -4,14 +4,14 @@
 \alias{trim_seqs}
 \title{Trim Fragments}
 \usage{
-trim_seqs(fragments, min.width = 14, max.distance = 1000, max.bp = 150)
+trim_seqs(fragments, min.width = 10, max.width = 1000, max.bp = 150)
 }
 \arguments{
 \item{fragments}{The DNAStringSet object containing the random fragment sequences.}
 
-\item{min.width}{The minimum acceptable read length. Defaults to 14 bp.}
+\item{min.width}{The minimum acceptable fragment length (insert size). Defaults to 10.}
 
-\item{max.distance}{The maximum desired inner distance. Defaults to 1000 bp.}
+\item{max.width}{The maximum acceptable fragment length (insert size). Defaults to 1000.}
 
 \item{max.bp}{The maximum read length. Defaults to 150 bp.}
 }

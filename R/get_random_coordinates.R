@@ -7,6 +7,7 @@
 #'@param bam.file The bam file from the alignment
 #'@param paired Boolean. Whether or not the aligned data came from single- or paired-end reads. Defaults to TRUE.
 #'@param return.reads Boolean. Whether or not to return the start/end coordinates for each read or for each mapped fragment.
+#'@param five.prime Boolean. Whether or not to only return the 5' read coordinate. Defaults to TRUE.
 #'@param mapq.cutoff The desired mapq cutoff value.
 #'@param simple.cigar Boolean. Identical to simpleCigar in Rsamtools::ScanBamParam().
 #'@param tag A vector of tags on which to filter the input BAM file. To omit, set tag=character(0).
@@ -18,6 +19,7 @@
 #'
 #'@return A GRanges object containing the uniquely mapped random fragments.
 #'
+#'@importFrom rtracklayer export
 #'@import Rsamtools
 #'@import GenomicAlignments
 #'@import GenomicFiles
@@ -28,16 +30,17 @@
 #'@export
 #'
 get_random_coordinates <- function( bam.file,
-                                paired,
-                                return.reads = FALSE,
-                                mapq.cutoff = 0,
-                                simple.cigar = FALSE,
-                                tag = "NM",
-                                tagFilter = list(NM = 0),
-                                yield.size = NA,
-                                sort = FALSE,
-                                prefix,
-                                write = FALSE ){
+                                    paired,
+                                    return.reads = FALSE,
+                                    five.prime = TRUE,
+                                    mapq.cutoff = 0,
+                                    simple.cigar = FALSE,
+                                    tag = "NM",
+                                    tagFilter = list(NM = 0),
+                                    yield.size = NA,
+                                    sort = TRUE,
+                                    prefix,
+                                    write = FALSE ){
 
   bam <- BamFile( bam.file, asMates = paired, yieldSize = yield.size )
 
@@ -53,24 +56,24 @@ get_random_coordinates <- function( bam.file,
                               tagFilter = tagFilter )
 
       yield <- function(x){ readGAlignmentPairs( x, param = params ) }
+      } else{
+        warning( "Cannot return fragment coordinates for unpaired data.",
+                 "\n",
+                 "Set return.reads to TRUE.",
+                 call. = FALSE )
+    }
     } else{
-      warning( "Cannot return fragment coordinates for unpaired data.",
-               "\n",
-               "Treating return.reads as TRUE.",
-               call. = FALSE )
+      params <- ScanBamParam( flag = scanBamFlag( isDuplicate = FALSE,
+                                                  isSecondaryAlignment = FALSE,
+                                                  isUnmappedQuery = FALSE ),
+                              mapqFilter = mapq.cutoff,
+                              simpleCigar = simple.cigar,
+                              tag = tag,
+                              tagFilter = tagFilter )
+      yield <- function(x){
+        readGAlignments( x, param = params )
+      }
     }
-  } else{
-    params <- ScanBamParam( flag = scanBamFlag( isDuplicate = FALSE,
-                                                isSecondaryAlignment = FALSE,
-                                                isUnmappedQuery = FALSE ),
-                            mapqFilter = mapq.cutoff,
-                            simpleCigar = simple.cigar,
-                            tag = tag,
-                            tagFilter = tagFilter )
-    yield <- function(x){
-      readGAlignments( x, param = params )
-    }
-  }
 
   map <- identity
   reduce <- c
@@ -82,6 +85,14 @@ get_random_coordinates <- function( bam.file,
 
   gr <- GRanges( df )
 
+  if( isTRUE( five.prime ) ){
+    plus <- gr[ strand(gr) == "+" ]
+    minus <- gr[ strand(gr) == "-" ]
+    end( plus ) = start( plus )
+    start( minus ) = end( minus )
+    gr <- c( plus, minus )
+  }
+
   if ( isTRUE( sort ) ){
     gr <- sort( gr, ignore.strand = TRUE )
   }
@@ -90,12 +101,12 @@ get_random_coordinates <- function( bam.file,
     return( gr )
     } else{
     if ( missing( prefix ) ){
-      stop( "prefix must be defined out write out the .RData file.",
+      stop( "prefix must be defined to write out the coordinates.",
             call. = FALSE )
-      }
-      save( gr,
-            file = paste0( prefix, "_unique_fragments.RData.gz") ,
-            compression_level = 6 )
+    }
+      rtracklayer::export(object = gr,
+                          con = paste0( prefix, "_random.bed" ),
+                          format = "bed")
       }
   }
 

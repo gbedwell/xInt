@@ -8,10 +8,11 @@ make_fragments(
   insert.sites,
   frag.sites = NULL,
   random = TRUE,
-  mean = 500,
-  sd = 150,
+  mean = 400,
+  sd = 100,
   genome.obj,
-  to.chr.ends = TRUE
+  to.chr.ends = TRUE,
+  U3 = FALSE
 )
 }
 \arguments{
@@ -28,12 +29,15 @@ randomly (TRUE) or by simulated restriction digestion (FALSE)}
 The target mean fragment size. 400 bp default.}
 
 \item{sd}{Only required when random is TRUE.
-The target fragment size standard deviation. 150 bp default.}
+The target fragment size standard deviation. 100 bp default.}
 
 \item{genome.obj}{The BSgenome object of interest.}
 
 \item{to.chr.ends}{Boolean. Whether or not to treat chromosome ends as capable of generating
 potentially mappable fragments. Defaults to TRUE.}
+
+\item{U3}{Boolean. Whether or not mapping is done from the U3 end (5' LTR relative to top-strand).
+Defaults to FALSE.}
 }
 \value{
 A GRanges object of fragment ranges.

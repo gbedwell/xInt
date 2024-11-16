@@ -37,8 +37,11 @@
 #'
 #'@export
 #'
-make_logo <- function( site.list, seq.len = 30, genome.obj, ignore.strand = FALSE,
+make_logo <- function( site.list, seq.len = 24, genome.obj, ignore.strand = FALSE,
                        current.start = 1, tsd = 5, return.plot = TRUE, wrap = FALSE, ... ){
+
+  # TO-DO: Add the ability to sample elements in site.list.
+  # Will speed up logos for large datasets.
 
   if( !validObject( site.list ) ){
     stop( "site.list is not a valid SiteListObject.",

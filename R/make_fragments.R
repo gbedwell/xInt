@@ -11,10 +11,12 @@
 #'@param mean Only required when random is TRUE.
 #'The target mean fragment size. 400 bp default.
 #'@param sd Only required when random is TRUE.
-#'The target fragment size standard deviation. 150 bp default.
+#'The target fragment size standard deviation. 100 bp default.
 #'@param genome.obj The BSgenome object of interest.
 #'@param to.chr.ends Boolean. Whether or not to treat chromosome ends as capable of generating
 #'potentially mappable fragments. Defaults to TRUE.
+#'@param U3 Boolean. Whether or not mapping is done from the U3 end (5' LTR relative to top-strand).
+#'Defaults to FALSE.
 #'
 #'@return A GRanges object of fragment ranges.
 #'
@@ -27,24 +29,40 @@
 make_fragments <- function( insert.sites,
                             frag.sites = NULL,
                             random = TRUE,
-                            mean = 500,
-                            sd = 150,
+                            mean = 400,
+                            sd = 100,
                             genome.obj,
-                            to.chr.ends = TRUE ){
+                            to.chr.ends = TRUE,
+                            U3 = FALSE ){
 
   genome.seqlengths <- seqlengths( genome.obj )
 
   if( !isTRUE( random ) ){
     if( is.null( frag.sites ) ){
-      stop( "frag.sites cannot be NULL for non-random fragmentation.", call.=FALSE )
+      stop( "frag.sites cannot be NULL for non-random fragmentation.", call. = FALSE )
     }
 
     matches <- lapply( X = frag.sites,
                        FUN = function(x){
-                         precede( x = insert.sites,
-                                  subject = x,
-                                  select = "all",
-                                  ignore.strand = FALSE ) } )
+                         if( isTRUE(U3) ){
+                           tmp.sites <- insert.sites
+                           strand(tmp.sites) <- ifelse( test = strand(tmp.sites) == '+',
+                                                        yes = '-', no = '+')
+
+                           follow( x = tmp.sites,
+                                   subject = x,
+                                   select = "all",
+                                   ignore.strand = FALSE )
+
+                         } else{
+                           precede( x = insert.sites,
+                                    subject = x,
+                                    select = "all",
+                                    ignore.strand = FALSE )
+                          }
+                         }
+                       )
+
 
     frag.ranges <- lapply( X = seq_along( matches ),
                            FUN = function(x){
@@ -55,17 +73,32 @@ make_fragments <- function( insert.sites,
                              plus.ind <- which( as.character( strand(is) ) == "+" )
                              minus.ind <- which( as.character( strand(is) ) == "-" )
 
-                             plus <- GRanges( seqnames = seqnames( is[ plus.ind ]),
-                                              ranges = IRanges( start = start( is[ plus.ind ] ),
-                                                                end = end( fs[ plus.ind ] ) ),
-                                              strand = strand( is[ plus.ind ] )
-                             )
+                             # Strand output below given with respect to
+                             # the orientation of the sequenced read!
+                             # This is critical for sequence retrieval!
+                             if( !isTRUE(U3) ){
+                               plus <- GRanges( seqnames = seqnames( is[ plus.ind ] ),
+                                                ranges = IRanges( start = start( is[ plus.ind ] ),
+                                                                  end = end( fs[ plus.ind ] ) ),
+                                                strand = "+" )
 
-                             minus <- GRanges( seqnames = seqnames( is[ minus.ind ] ),
-                                               ranges = IRanges( start = start( fs[ minus.ind ] ),
-                                                                 end = end( is[ minus.ind ] ) ),
-                                               strand = strand( is[ minus.ind ] )
-                             )
+                               minus <- GRanges( seqnames = seqnames( is[ minus.ind ] ),
+                                                 ranges = IRanges( start = start( fs[ minus.ind ] ),
+                                                                   end = end( is[ minus.ind ] ) ),
+                                                 strand = "-" )
+                             } else{
+                               plus <- GRanges( seqnames = seqnames( is[ plus.ind ] ),
+                                                ranges = IRanges( start = start( fs[ plus.ind ] ),
+                                                                  end = end( is[ plus.ind ] ) ),
+                                                strand = "-" )
+
+                               minus <- GRanges( seqnames = seqnames( is[ minus.ind ] ),
+                                                 ranges = IRanges( start = start( is[ minus.ind ] ),
+                                                                   end = end( fs[ minus.ind ] ) ),
+                                                 strand = "+" )
+                             }
+
+
 
                              gr <- c( plus, minus )
                              gr <- sort( gr, ignore.strand = TRUE )
@@ -104,18 +137,36 @@ make_fragments <- function( insert.sites,
     plus.sites <- insert.sites[ strand( insert.sites ) == "+" ]
     # plus.widths <- rlnorm( n = length(plus.sites), meanlog = lnorm.loc, sdlog = lnorm.shape)
     plus.widths <- rnbinom( n = length( plus.sites ), size = disp, mu = mean )
-    plus.sites <- GRanges( seqnames = seqnames(plus.sites),
-                           ranges = IRanges(start = start( plus.sites ),
-                                            end = start( plus.sites ) + plus.widths ),
-                           strand = "+" )
+
+    if( !isTRUE(U3) ){
+      plus.sites <- GRanges( seqnames = seqnames(plus.sites),
+                             ranges = IRanges(start = start( plus.sites ),
+                                              end = start( plus.sites ) + plus.widths ),
+                             strand = "+" )
+    } else{
+      plus.sites <- GRanges( seqnames = seqnames(plus.sites),
+                             ranges = IRanges(start = pmax( start( plus.sites ) - plus.widths, 1 ),
+                                              end = start( plus.sites ) ),
+                             strand = "-" )
+    }
+
 
     minus.sites <- insert.sites[ strand( insert.sites ) == "-" ]
     # minus.widths <- rlnorm( n = length( minus.sites ), meanlog = lnorm.loc, sdlog = lnorm.shape )
     minus.widths <- rnbinom( n = length( minus.sites ), size = disp, mu = mean )
-    minus.sites <- GRanges( seqnames = seqnames( minus.sites ),
-                            ranges = IRanges(start = pmax( start( minus.sites ) - minus.widths, 1),
-                                             end = end( minus.sites ) ),
-                            strand = "-" )
+
+    if( !isTRUE(U3) ){
+      minus.sites <- GRanges( seqnames = seqnames( minus.sites ),
+                              ranges = IRanges(start = pmax( start( minus.sites ) - minus.widths, 1),
+                                               end = end( minus.sites ) ),
+                              strand = "-" )
+    } else{
+      minus.sites <- GRanges( seqnames = seqnames( minus.sites ),
+                              ranges = IRanges(start = start( minus.sites ),
+                                               end = end( minus.sites ) + minus.widths ),
+                              strand = "+" )
+    }
+
 
     frag.ranges <- do.call( c, list( plus.sites, minus.sites ) )
 

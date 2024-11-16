@@ -2,6 +2,10 @@
 #'
 #' Perform per-feature integration targeting comparisons within a given feature-set.
 #' This is analogous to differential expression analyses for e.g., RNA-seq and uses the same machinery in limma.
+#' The design matrix constructed by this function is model.matrix(~0 + condition).
+#' If included in the function call, batch variables are also incorporated: model.matrix(~0 + condition + batch).
+#' This design allows intuitive construction of contrasts and should be amenable to
+#' standard integration site analyses.
 #' The output object can be further analyzed using other limma functions,
 #' such as <code>decideTests()</code> and <code>topTable()</code>.
 #' See the limma documentation for more information.
@@ -16,13 +20,17 @@
 #'@param trend Boolean. Passed to <code>limma::eBayes()</code>. See limma documentation for more information. Defaults to FALSE.
 #'@param norm.method If NULL, only library size normalization is performed.
 #'Otherwise, must be one of the valid options in edgeR's <code>calcNormFactors()</code>.
-#'@param remove.zeros Boolean. Whether or not to remove rows with all zeros from the count matrix. Defaults to TRUE.
-#'@param plot Boolean. Whether or not to output diagnostic plots related to sample biases and mean-variance modeling.
+#'@param remove.zeros Boolean. Whether or not to remove rows with all zeros from the count matrix.
+#'Defaults to TRUE.
+#'@param plot Boolean. Whether or not to output diagnostic plots related to
+#'sample biases and mean-variance modeling.
 #'Defaults to TRUE.
 #'@param return.contrasts Boolean. Whether or not to return the contrast fits. Defaults to TRUE.
 #'If FALSE, the lmFit() output is returned after empirical Bayes moderation.
+#'@param batch A character vector of column names in the colData of the xIntObject containing relevant
+#'batch information.
 #'
-#'@return A MArrayLM object containing the results of feature-wise linear fits.
+#'@return An MArrayLM object containing the results of feature-wise linear fits.
 #'
 #'@examples
 #'data(xobj)
@@ -37,10 +45,7 @@
 #'
 local_comparisons <- function( xint.obj, min.count, min.total.count, trend = FALSE,
                                norm.method = NULL, remove.zeros = TRUE,
-                               plot = TRUE, return.contrasts = TRUE ){
-
-  # TO-DO: allow for the inclusion of batch effect columns in the model matrix.
-  # Must remove batch info from contrasts generated in for loop.
+                               plot = TRUE, return.contrasts = TRUE, batch = NULL ){
 
   if( !validObject( xint.obj ) ){
     stop( "xint.obj is not a valid xIntObject.",
@@ -66,10 +71,30 @@ local_comparisons <- function( xint.obj, min.count, min.total.count, trend = FAL
     group = dat$condition
   )
 
-  group <- dat$condition
+  if( !is.null( batch ) ){
+    for( entry in batch ){
+      dge$samples[[entry]] <- dat[[entry]]
+    }
+  }
 
-  design <- model.matrix( ~0 + group )
-  colnames( design ) <- gsub( pattern = "group", replacement = "", x = colnames( design ) )
+  group <- dat$condition
+  # design <- model.matrix( ~0 + group )
+  # colnames( design ) <- gsub( pattern = "group", replacement = "", x = colnames( design ) )
+
+  if( !is.null( batch ) ){
+    formula.str <- paste( "~ 0 + condition +", paste( batch, collapse = " + " ) )
+  } else{
+    formula.str <- paste( "~ 0 + condition" )
+  }
+
+  design <- model.matrix( as.formula( formula.str ), data = dat )
+  colnames( design ) <- gsub( pattern = "condition", replacement = "", x = colnames( design ) )
+
+  if( !is.null( batch ) ){
+    for( entry in batch ){
+      colnames( design ) <- gsub( pattern = entry, replacement = "", x = colnames( design ) )
+    }
+  }
 
   keep <- filterByExpr(
     y = dge,
@@ -92,7 +117,13 @@ local_comparisons <- function( xint.obj, min.count, min.total.count, trend = FAL
     plotMDS( lcpm, labels = group )
   }
 
-  design.cols <- colnames( design )
+  if( !is.null( batch ) ){
+    design.cols <- colnames(design)[ grepl( paste( dat$condition, collapse = "|" ),
+                                            colnames(design) ) ]
+  } else{
+    design.cols <- colnames(design)
+  }
+
   contrast.list <- list()
 
   for( i in seq( 1, ( length( design.cols ) - 1 ) ) ){

@@ -95,6 +95,8 @@ prop_tests <- function( xint.obj, comparison = c( "all", "pooled" ), p.adj = "BH
 
   rownames( pairwise ) <- apply(X = combos, MARGIN = 2, FUN = function(x){ paste0( x[1], "-", x[2] ) })
 
+  # This should handle NA and NaN values.
+  # OR the functions above should not return NaN...
   if( any( pairwise[, 1:3 ] == 0 ) ){
     warning( "Some comparisons returned p = 0.",
              "\n",
