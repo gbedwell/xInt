@@ -1,128 +1,100 @@
-#' Meta-feature analysis
+#' Meta-Feature Analysis
 #'
-#' Calculates the relative position of each integration site along the features-of-interest.
-#' Returns either the relative positions for each site in each dataset or the number of sites within defined
-#' bins along the features.
+#' Calculates the relative position of sites along defined features-of-interest.
+#' Returns the relative positions for each site in each dataset.
 #'
-#'@param site.list The list or GRangesList containing IS coordinates.
-#'@param features The features-of-interest. Must be a GRanges object.
-#'@param bins The number of bins to generate across the features.
-#'Defaults to NULL, which returns the relative position of every site.
-#'<bins=0</code> behaves like NULL.
-#'@param metadata The names of metadata columns to keep.
-#'Only used when the data are not binned.
-#'@param collapse Boolean. Whether or not to collapse the output into a single data frame.
-#'Defaults to TRUE.
+#' @param sites The list or GRangesList containing IS coordinates.
+#' @param features The features-of-interest. Must be a GRanges object.
+#' @param collapse Boolean. Whether or not to collapse the output into a single data frame.
+#' Defaults to TRUE. For compatibility with plot_metafeature(), this must be TRUE.
+#' @param conditions The condition for each dataset. Must be same length as sites.
+#' 
+#' @return A data frame or a list of data frames.
 #'
-#'@return A data frame or a list of data frames.
+#' @examples
+#' data(sites2)
+#' data(xobj)
+#' feats <- rowRanges(xobj)
 #'
-#'@examples
-#'data(sites2)
-#'data(xobj)
-#'feats <- rowRanges(xobj)
+#' metafeature(sites = sites2,
+#'             features = feats)
 #'
-#'metafeature(site.list = sites2,
-#'            features = feats)
+#' @import GenomicRanges
+#' @import S4Vectors
 #'
-#'metafeature(site.list = sites2,
-#'            features = feats,
-#'            bins = 10)
+#' @export
 #'
-#'@import GenomicRanges
-#'@import S4Vectors
-#'
-#'@export
-#'
-metafeature <- function( site.list,
-                         features,
-                         bins = NULL,
-                         metadata = NULL,
-                         collapse = TRUE ){
+metafeature <- function(sites,
+                        features,
+                        collapse = TRUE,
+                        conditions = NULL){
 
-  if( !validObject( site.list ) ){
-    stop( "site.list is not a valid SiteListObject.",
-          call. = FALSE )
+  if(!validObject(sites)){
+    stop("sites is not a valid SiteList object.",
+         call. = FALSE)
+  }
+  
+  if(!is.null(conditions) && length(conditions) != length(sites)){
+    stop("conditions must have the same length as sites.",
+         call. = FALSE)
   }
 
-  pos.ll <- lapply( X = site.list,
-                    FUN = function(x){
+  pos.ll <- lapply(
+    X = sites,
+    FUN = function(x){
+      gr <- x
+      ol <- findOverlaps(
+        query = gr,
+        subject = features,
+        minoverlap = 1L,
+        type = "any",
+        ignore.strand = TRUE
+        )
 
-                      if( all( width( x ) == 1 ) ){
+      ol.sites <- gr[queryHits(ol)]
+      ol.feats <- features[subjectHits(ol)]
 
-                        gr <- x
+      df <- data.frame(
+        chr = as.character(seqnames(ol.sites)),
+        site = start(ranges(ol.sites)),
+        site.strand = as.character(strand(ol.sites)),
+        feature.start = start(ranges(ol.feats)),
+        feature.end = end(ranges(ol.feats)),
+        feature.strand = as.character(strand(ol.feats))
+        )
 
-                      } else{
+      df$rel.position <- (df$site - df$feature.start) / (df$feature.end - df$feature.start)
+      df[df$feature.strand == "-", ]$rel.position <- 1 - df[df$feature.strand == "-", ]$rel.position
 
-                        warning( "The width of the provided integration site coordinates is > 1.
-                                 Defining the position of each integration site as the 5'
-                                 end of the given coordinates.",
-                                 call. = FALSE )
+      return(df)
+      }
+    )
 
-                        plus <- x[ strand( x ) == "+" ]
-                        end( plus ) <- start( plus )
-
-                        minus <- x[ strand( x ) == "-" ]
-                        start( minus ) <- end( minus )
-
-                        gr <- sort( c( plus, minus ), ignore.strand = TRUE )
-
-                        }
-
-                      ol <- findOverlaps( query = gr,
-                                          subject = features,
-                                          minoverlap = 1L,
-                                          type = "any",
-                                          ignore.strand = TRUE )
-
-                      ol.sites <- gr[ queryHits( ol ) ]
-                      ol.feats <- features[ subjectHits( ol ) ]
-
-
-                      df <- data.frame( chr = as.character( seqnames( ol.sites ) ),
-                                        site = start( ranges( ol.sites ) ),
-                                        site.strand = as.character( strand( ol.sites ) ),
-                                        feature.start = start( ranges( ol.feats ) ),
-                                        feature.end = end( ranges( ol.feats ) ),
-                                        feature.strand = as.character( strand( ol.feats ) ) )
-
-                      df$rel.position <- ( df$site - df$feature.start ) / ( df$feature.end - df$feature.start )
-
-                      df[ df$feature.strand == "-", ]$rel.position <- 1 - df[ df$feature.strand == "-", ]$rel.position
-
-                      if( !is.null( metadata ) ){
-                        md <- mcols( ol.feats )[ names( mcols( features ) ) == metadata ]
-                        df <- cbind( df, md )
-                      }
-
-                      return( df )
-                      }
-                    )
-
-  if( !is.null( bins ) && bins != 0 ){
-    b <- seq(0, 1, length.out = bins + 1 )
-
-    pos.ll <- lapply(
-      X = pos.ll,
-      FUN = function(x){
-        v <- x$rel.position
-        tt <- table(cut(v, breaks = b, include.lowest = TRUE))
-        percentiles <- b
-        percentiles <- percentiles[ percentiles != 0 ] * 100
-        dat <- data.frame( percentiles = percentiles )
-        dat <- cbind( dat, data.frame( tt ) )
-        dat <- dat[,c(1,3)]
-        colnames(dat) <- c( "percentile", "frequency" )
-        dat$fraction <- dat$frequency / sum( dat$frequency )
-        return(dat)
-        }
-      )
+  # Add dataset names and condition information
+  pos.ll <- Map(function(x, y) { 
+    x$dataset <- y
+    if(!is.null(conditions)) {
+      dataset.to.condition <- setNames(conditions, names(sites))
+      x$condition <- dataset.to.condition[y]
+    } else {
+      x$condition <- x$dataset
     }
-
-  if( isTRUE( collapse ) ){
-    pos.ll <- Map( function(x, y) { cbind( x, dataset = y ) }, pos.ll, names( pos.ll ) )
-    pos.ll <- do.call( rbind, pos.ll )
-    rownames( pos.ll ) <- NULL
+    return(x)
+  }, pos.ll, names(sites))
+  
+  # Always combine by condition if conditions are provided
+  if(!is.null(conditions)) {
+    if(isTRUE(collapse)) {
+      pos.ll <- do.call(rbind, pos.ll)
+      rownames(pos.ll) <- NULL
+    } else {
+      all.datasets <- do.call(rbind, pos.ll)
+      pos.ll <- split(all.datasets, all.datasets$condition)
+    }
+  } else if(isTRUE(collapse)) {
+    pos.ll <- do.call(rbind, pos.ll)
+    rownames(pos.ll) <- NULL
   }
-
-  return( pos.ll )
+  
+  return(pos.ll)
 }

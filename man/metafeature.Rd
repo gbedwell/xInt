@@ -2,43 +2,33 @@
 % Please edit documentation in R/metafeature.R
 \name{metafeature}
 \alias{metafeature}
-\title{Meta-feature analysis}
+\title{Meta-Feature Analysis}
 \usage{
-metafeature(site.list, features, bins = NULL, metadata = NULL, collapse = TRUE)
+metafeature(sites, features, collapse = TRUE, conditions = NULL)
 }
 \arguments{
-\item{site.list}{The list or GRangesList containing IS coordinates.}
+\item{sites}{The list or GRangesList containing IS coordinates.}
 
 \item{features}{The features-of-interest. Must be a GRanges object.}
 
-\item{bins}{The number of bins to generate across the features.
-Defaults to NULL, which returns the relative position of every site.
-<bins=0\if{html}{\out{</code>}} behaves like NULL.}
-
-\item{metadata}{The names of metadata columns to keep.
-Only used when the data are not binned.}
-
 \item{collapse}{Boolean. Whether or not to collapse the output into a single data frame.
-Defaults to TRUE.}
+Defaults to TRUE. For compatibility with plot_metafeature(), this must be TRUE.}
+
+\item{conditions}{The condition for each dataset. Must be same length as sites.}
 }
 \value{
 A data frame or a list of data frames.
 }
 \description{
-Calculates the relative position of each integration site along the features-of-interest.
-Returns either the relative positions for each site in each dataset or the number of sites within defined
-bins along the features.
+Calculates the relative position of sites along defined features-of-interest.
+Returns the relative positions for each site in each dataset.
 }
 \examples{
 data(sites2)
 data(xobj)
 feats <- rowRanges(xobj)
 
-metafeature(site.list = sites2,
-           features = feats)
-
-metafeature(site.list = sites2,
-           features = feats,
-           bins = 10)
+metafeature(sites = sites2,
+            features = feats)
 
 }

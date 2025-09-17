@@ -5,7 +5,7 @@
 \alias{xobj}
 \title{Example xIntOverlap Object}
 \format{
-An object of class \code{xIntObject} of length 1.
+An object of class \code{xIntOverlap} with 41488 rows and 9 columns.
 }
 \source{
 Created with make_xIntOverlap().

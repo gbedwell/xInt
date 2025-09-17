@@ -12,7 +12,8 @@ make_fragments(
   sd = 100,
   genome.obj,
   to.chr.ends = TRUE,
-  U3 = FALSE
+  U3 = FALSE,
+  read.name.prefix = "fragment_"
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ potentially mappable fragments. Defaults to TRUE.}
 
 \item{U3}{Boolean. Whether or not mapping is done from the U3 end (5' LTR relative to top-strand).
 Defaults to FALSE.}
+
+\item{read.name.prefix}{The naming prefix for read names. Defaults to "fragment_".}
 }
 \value{
 A GRanges object of fragment ranges.

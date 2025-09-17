@@ -11,7 +11,7 @@ bound_check(fragments, genome.obj, include.lower = FALSE)
 
 \item{genome.obj}{The BSgenome object of interest.}
 
-\item{include.lower}{Boolean. Whether or not the check lower bound validity. This is not always necessary, so it can be toggled.}
+\item{include.lower}{Boolean. Whether or not the check lower bound validity.}
 }
 \value{
 A vector of index values for terms in violation of genomic boundaries.

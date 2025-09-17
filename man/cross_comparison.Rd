@@ -4,16 +4,20 @@
 \alias{cross_comparison}
 \title{Calculate Cross-Sample Overlap}
 \usage{
-cross_comparison(site.list, unique.sites = TRUE, overlap.coef = TRUE)
+cross_comparison(
+  sites,
+  overlap.coef = c("overlap", "jaccard", "dice", "none"),
+  return.sites = FALSE
+)
 }
 \arguments{
-\item{site.list}{A SiteListObject object.}
+\item{sites}{A SiteListObject object.}
 
-\item{unique.sites}{Boolean. Whether or not to enforce unique sites before calculating overlap.
-Defaults to TRUE.}
+\item{overlap.coef}{One of 'overlap' (Szymkiewicz–Simpson overlap coefficient),
+'jaccard' (Jaccard index), 'dice', (Dice-Sørensen coefficient), or
+'none' (the number of overlapping sites is returned).}
 
-\item{overlap.coef}{Boolean. Whether or not to return the Szymkiewicz–Simpson overlap coefficient.
-Defaults to TRUE.}
+\item{return.sites}{Returns a GRanges object holding the sites present in 2 or more datasets.}
 }
 \value{
 A matrix of counts denoting the number of overlapping sites between each sample.
@@ -22,6 +26,6 @@ A matrix of counts denoting the number of overlapping sites between each sample.
 Calculates the number of overlapping sites between each sample in a SiteListObject.
 }
 \examples{
-cross_comparison(site.list = sites)
+cross_comparison(sites = sites)
 
 }

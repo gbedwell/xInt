@@ -4,26 +4,29 @@
 \alias{collapse_sites}
 \title{Pool Replicate Datasets}
 \usage{
-collapse_sites(site.list, group.index.list)
+collapse_sites(sites, group.index.list, sorted = TRUE)
 }
 \arguments{
-\item{site.list}{A list of GRanges objects or a GRangesList containing integration site coordinates from various samples.}
+\item{sites}{A SiteList object.}
 
-\item{group.index.list}{A list of index vectors enumerating which site.list elements correspond to which conditions.
+\item{group.index.list}{A list of index vectors enumerating which sites elements correspond to which conditions.
 Each group.index.list element should correspond to a unique condition.}
+
+\item{sorted}{Boolean. Whether or not to sort the concatenated data.
+Ignores strand. Defaults to TRUE.}
 }
 \value{
 A list of GRanges objects or a GRangesList of the combined coordinates.
 }
 \description{
-Given a list of integration site datasets containing replicates from various conditions,
+Given a SiteList object containing replicates from various conditions,
 pool the replicates into a single, larger dataset while keeping different conditions separate.
 }
 \examples{
 data(sites)
-collapse_sites(site.list = sites,
-              group.index.list = list(A = 1:4,
-                                      B = 5:9,
-                                      C = 10)
+collapse_sites(sites = sites,
+               group.index.list = list(A = 1:4,
+                                       B = 5:9,
+                                       C = 10)
 
 }

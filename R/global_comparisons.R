@@ -1,125 +1,87 @@
-#' Global Integration Targeting Comparisons
+#' Wrap Basic Global Comparisons
 #'
-#' Compare global integration targeting preferences into a given feature-set between infection conditions.
-#' Comparisons are made using a two-sample t-test.
+#' A basic wrapper for global comparison functions. Outputs a data frame containing effect size metrics and adjusted
+#' p-values. Comparisons made via GLM utilize the quasi-Poisson model family and other default parameters in overlap_comparisons().
+#' This function does not output all of the information returned in the comparison functions themselves. 
+#' For more detailed output, run the functions individually.
 #'
-#'@param xint.obj The xInt object of interest.
-#'@param p.adjust.method The p-value adjustment method.
-#'Defaults to "BH". See <code>stats::p.adjust()</code> for more information.
+#' @param xint.obj An xIntOverlap object or a list of xIntOverlap objects (output by bulk_comparisons()).
+#' @param comparison.type One of 'glm', 'mean', or 'wilcoxon'. 
+#' Determines the use of overlap_comparisons(), overlap_mean_tests(), or wilcox_comparisons().
+#' @param mean.method One of 't.test', or 'anova'. Only used when comparison.type = 'mean'.
+#' @param p.adjust.method The method to use for p-value adjustments. Defaults to "BH".
 #'
-#'@return A data frame containing the results of each comparison.
+#' @return A data frame containing effect size metrics and p-values for each comparison.
 #'
-#'@examples
-#'data(xobj)
-#'global_comparisons(xint.obj = xobj)
+#' @examples
+#' data(xobj)
+#' # add examples
 #'
-#'@importFrom stats t.test p.adjust
-#'@import methods
+#' @export
 #'
-#'@export
-#'
-global_comparisons <- function( xint.obj, p.adjust.method = "BH" ){
+global_comparisons <- function(xint.obj, comparison.type = c("glm", "mean", "wilcoxon"), 
+                               mean.method = c("t.test", "anova"), p.adjust.method = "BH") {
+  comparison.type <- match.arg(comparison.type)
 
-  # TO-DO: Add ANOVA followed by Tukey HSD functionality?
+  if(comparison.type == "mean") {
+    mean.method <- match.arg(mean.method)
+  }
 
-  if( !validObject( xint.obj ) ){
-    stop( "xint.obj is not a valid xIntObject.",
-          call. = FALSE )
-    }
+  p.adjust.method <- match.arg(p.adjust.method)
 
-  dat <- colData( xint.obj )
+  if(is.list(xint.obj) && !is.data.frame(xint.obj)) {
+    keep <- which(
+      vapply(
+        X = xint.obj,
+        FUN = function(o){is(o, "xIntOverlap")},
+        FUN.VALUE = logical(1)
+        ))
 
-  # Implement same log-cpm calculation in limma.
-  # Ensures that log2(0) is never taken
-  # and that overlapping.sites/total.sites is always < 1.
-  lcpm <- log2( ( dat$overlapping.sites + 0.5 ) / ( dat$total.sites + 1 ) * 1E6 )
-  names( lcpm ) <- dat$condition
+    xint.obj <- xint.obj[keep]
 
-  conditions <- levels( dat$condition )
+    result.list <- lapply(
+      X = xint.obj,
+      FUN = function(xo) {
+        if(comparison.type == "glm") {
+          comparisons <- overlap_comparisons(xint.obj = xo, type = "global")
+          comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
+        } else if(comparison.type == "mean") {
+          comparisons <- overlap_mean_tests(xint.obj = xo, method = mean.method, p.adjust.method = p.adjust.method)
+        } else if(comparison.type == "wilcoxon") {
+          comparison <- wilcox_comparisons(xint.obj = xo, type = "global")
+          comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
+        }
 
-  cond.lens <- vapply(
-    X = conditions,
-    FUN = function(x){
-      length( dat$condition[ dat$condition == x ] )
-      },
-    FUN.VALUE = numeric(1)
+        comparisons <- comparisons[ , c("comparison", "p.adj")]
+        roc <- overlap_effect(xint.obj = xo)
+        tmp <- merge(roc, comparisons, by = "comparison", all = TRUE)
+        return(tmp)
+      }
     )
 
-  multi.rep <- names( cond.lens[ cond.lens > 1 ] )
-  single.rep <- names( cond.lens[ cond.lens == 1 ] )
-
-  if( length( multi.rep ) == 0 ){
-    stop( "No replicate datasets are provided.",
-          call. = FALSE )
-  }
-
-  comparisons <- list()
-
-  if( length( multi.rep ) > 1 ){
-    for( i in seq( 1, ( length( multi.rep ) - 1 ) ) ){
-      for( j in seq( ( i + 1 ), length( multi.rep ) ) ){
-        if( multi.rep[i] != multi.rep[j] ){
-          s1 <- lcpm[ names( lcpm ) == multi.rep[i] ]
-          s2 <- lcpm[ names( lcpm ) == multi.rep[j] ]
-          contrast.name <- paste( multi.rep[i], "-", multi.rep[j], sep = "" )
-          tt <- t.test( x = s1,
-                        y = s2,
-                        alternative = "two.sided",
-                        var.equal = TRUE )
-
-          out <- data.frame(
-            t = tt$statistic,
-            df = tt$parameter,
-            mu1 = tt$estimate[1],
-            mu2 = tt$estimate[2],
-            p.value = tt$p.value
-          )
-
-          comparisons[[contrast.name]] <- out
-        }
-      }
-    }
-  }
-
-  if( length( single.rep ) != 0 ){
-    for( i in seq( 1, length( multi.rep ) ) ){
-      for( j in seq( 1, length( single.rep ) ) ){
-        if( multi.rep[i] != single.rep[j] ){
-          s1 <- lcpm[ names( lcpm ) == multi.rep[i] ]
-          s2 <- lcpm[ names( lcpm ) == single.rep[j] ]
-          contrast.name <- paste( multi.rep[i], "-", single.rep[j], sep = "" )
-
-          m1 <- mean(s1)
-          n1 <- length(s1)
-          m2 <- mean(s2)
-          n2 <- length(s2)
-
-          se <- sqrt( (1/n1 + 1/n2) * ( (n1-1) * sd(s1)^2 + (n2-1) * 0^2 ) / (n1 + n2 - 2) )
-          df <- n1 + n2 - 2
-          t <- (m1 - m2) / se
-
-          out <- data.frame(
-            t = t,
-            df = df,
-            mu1 = m1,
-            mu2 = m2,
-            p.value = 2 * pt( -abs(t), df )
-          )
-
-          comparisons[[contrast.name]] <- out
-        }
-      }
+    result <- do.call(rbind, result.list)
+  } else{
+    if(comparison.type == "glm") {
+      comparisons <- overlap_comparisons(xint.obj = xint.obj, type = "global")
+      comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
+    } else if(comparison.type == "mean") {
+      comparisons <- overlap_mean_tests(xint.obj = xint.obj, method = mean.method, p.adjust.method = p.adjust.method)
+    } else if(comparison.type == "wilcoxon") {
+      comparisons <- wilcox_comparisons(xint.obj = xint.obj, type = "global")
+      comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
     }
 
-    if( length( single.rep ) > 1 ){
-      warning( "The following datasets cannot be compared: ",
-               paste( single.rep, collapse = ", " ), ".",
-               call. = FALSE )
+    if(!"p.val" %in% colnames(comparisons)) {
+      comparisons$p.val <- comparisons$p.adj
     }
+
+    comparisons <- comparisons[ , c("comparison", "p.val", "p.adj")]
+
+    roc <- overlap_effect(xint.obj = xint.obj)
+
+    result <- merge(roc, comparisons, by = "comparison", all = TRUE)
+  
+  return(result)
   }
 
-  comparisons <- do.call( rbind, comparisons )
-  comparisons$p.adj <- p.adjust( p = comparisons$p.value, method = p.adjust.method )
-
-  return( comparisons )
 }

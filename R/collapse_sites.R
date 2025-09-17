@@ -1,55 +1,60 @@
 #' Pool Replicate Datasets
 #'
-#' Given a list of integration site datasets containing replicates from various conditions,
-#'pool the replicates into a single, larger dataset while keeping different conditions separate.
+#' Given a SiteList object containing replicates from various conditions,
+#' pool the replicates into a single, larger dataset while keeping different conditions separate.
 #'
-#'@param site.list A list of GRanges objects or a GRangesList containing integration site coordinates from various samples.
-#'@param group.index.list A list of index vectors enumerating which site.list elements correspond to which conditions.
-#'Each group.index.list element should correspond to a unique condition.
+#' @param sites A SiteList object.
+#' @param group.index.list A list of index vectors enumerating which sites elements correspond to which conditions.
+#' Each group.index.list element should correspond to a unique condition.
+#' @param sorted Boolean. Whether or not to sort the concatenated data. 
+#' Ignores strand. Defaults to TRUE.
 #'
-#'@return A list of GRanges objects or a GRangesList of the combined coordinates.
+#' @return A list of GRanges objects or a GRangesList of the combined coordinates.
 #'
-#'@examples
-#'data(sites)
-#'collapse_sites(site.list = sites,
-#'               group.index.list = list(A = 1:4,
-#'                                       B = 5:9,
-#'                                       C = 10)
+#' @examples
+#' data(sites)
+#' collapse_sites(sites = sites,
+#'                group.index.list = list(A = 1:4,
+#'                                        B = 5:9,
+#'                                        C = 10)
 #'
-#'@import methods
-#'@import GenomicRanges
+#' @import methods
+#' @import GenomicRanges
 #'
-#'@export
+#' @export
 #'
-collapse_sites <- function( site.list, group.index.list ){
+collapse_sites <- function(sites, group.index.list, sorted = TRUE){
 
-  if( !is.list( group.index.list ) ){
-    stop( "Group index values must be given as a list.",
-          call. = FALSE )
-  }
+  if(!is.list(group.index.list)){
+    stop("Group index values must be given as a list.",
+          call. = FALSE)
+    }
 
-  if( !validObject( site.list ) ){
-    stop( "site.list is not a valid SiteListObject.",
-          call. = FALSE )
-  }
+  if(!validObject(sites)){
+    stop("sites is not a valid SiteList object.",
+         call. = FALSE)
+    }
 
-  ll <- lapply( X = group.index.list,
-                FUN = function(x){
-                  ind <- x
-                  out <- unlist( as( site.list[ ind ], "GRangesList" ) )
-                }
+  ll <- lapply(
+    X = group.index.list,
+    FUN = function(x){
+      ind <- x
+      out <- unlist(GRangesList(sites@sites[ind]))
+      if(sorted) {
+        out <- sort(out, ignore.strand = TRUE)
+      }
+      return(out)
+    }
   )
 
-  if( is.null( names( ll ) ) ){
-    warning( "No group names were provided in
-             'group.index.list. The returned list
-             will therefore not be named.",
-             call. = FALSE )
-  }
+  if(is.null(names(ll))){
+    warning("No group names were provided in
+            'group.index.list. The returned list
+            will therefore not be named.",
+            call. = FALSE)
+    }
 
-  if( is( site.list, "GRangesList" ) ){
-    ll <- as( ll, "GRangesList" )
-  }
+  ll <- SiteList(ll)
 
-  return( ll )
+  return(ll)
 }

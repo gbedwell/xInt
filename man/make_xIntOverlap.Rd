@@ -5,22 +5,22 @@
 \title{Make xIntOverlap Object}
 \usage{
 make_xIntOverlap(
-  site.list,
+  sites,
   features,
   conditions,
   condition.levels,
   min.overlap = 1L,
   id.col = "name",
+  expand = c(0, 0),
   ...
 )
 }
 \arguments{
-\item{site.list}{A list of GRanges objects or a GRangesList holding IS coordinates.}
+\item{sites}{A list of GRanges objects or a GRangesList holding IS coordinates.}
 
 \item{features}{A GRanges object for the feature-set of interest.}
 
-\item{conditions}{The infection condition for each dataset.
-Must be same length as site.list.}
+\item{conditions}{The condition for each dataset. Must be same length as sites.}
 
 \item{condition.levels}{The factor levels of conditions.
 All entries should be present in conditions.
@@ -33,6 +33,9 @@ Defaults to 1.}
 Must be provided.
 Default "name".}
 
+\item{expand}{Numeric vector of length 2 specifying the number of base pairs to expand the given ranges up/downstream.
+Defaults to c(0,0).}
+
 \item{...}{Used for adding additional columns to the object column data.
 Non-numeric and non-double vectors are automatically converted to a factor.
 Numeric and double vectors are left as-is.
@@ -41,7 +44,7 @@ Intended for batch information, etc.}
 }
 \value{
 A SummarizedExperiment object containing local and global feature overlap
-information for each dataset in site.list.
+information for each dataset in sites.
 }
 \description{
 Creates a ranged summarized experiment object compatible with other xInt functions.
@@ -53,7 +56,7 @@ data(sites)
 sites <- sites[!names(sites) \%in\% "C1"]
 data(xobj)
 feats <- rowRanges(xobj)
-make_xIntOverlap(site.list = sites,
+make_xIntOverlap(sites = sites,
                features = feats,
                conditions = c(rep("A",4),rep("B",5)),
                condition.levels = c("A","B"))

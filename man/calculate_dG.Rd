@@ -5,7 +5,7 @@
 \title{Calculate B-to-A deltaG}
 \usage{
 calculate_dG(
-  site.list,
+  sites,
   step.len = 50,
   genome.obj,
   current.start = 1,
@@ -14,7 +14,7 @@ calculate_dG(
 )
 }
 \arguments{
-\item{site.list}{The list or GRangesList containing the mapped site coordinates.}
+\item{sites}{A SiteList object.}
 
 \item{step.len}{The target length of the returned vector of dG values.}
 
@@ -29,7 +29,7 @@ This is used for centering the site coordinates.}
 \item{collapse}{Boolean. Whether or not to collapse the output into a single data.frame. Defaults to TRUE.}
 }
 \value{
-A list of data frames containing the sequence position and the corresponding dG value for each element in site.list.
+A list of data frames containing the sequence position and the corresponding dG value for each element in sites.
 }
 \description{
 Calculates the free energy change upon B to A transition of DNA.
@@ -39,6 +39,6 @@ Utilizes a 3 bp sliding window with a 1 bp step across the sequence of interest.
 \examples{
 library(BSgenome.Hsapiens.UCSC.hs1)
 data(sites2)
-calculate_dG( site.list = sites2, genome.obj = Hsapiens )
+calculate_dG(sites = sites2, genome.obj = Hsapiens)
 
 }

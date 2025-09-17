@@ -5,7 +5,7 @@
 \title{Calculate Feature Density}
 \usage{
 feature_density(
-  site.list,
+  sites,
   features,
   genome.obj = NULL,
   win.size = 1e+06,
@@ -13,11 +13,12 @@ feature_density(
   tsd = 5,
   min.overlap = 1L,
   average = TRUE,
-  remove.outliers = FALSE
+  remove.outliers = FALSE,
+  conditions = NULL
 )
 }
 \arguments{
-\item{site.list}{The list or GRangesList containing the mapped site coordinates.}
+\item{sites}{A SiteList object.}
 
 \item{features}{The feature-set of interest. Should be a GRanges object.}
 
@@ -38,21 +39,23 @@ Defaults to TRUE and returns a single value for each dataset.}
 
 \item{remove.outliers}{Boolean. Whether or not to remove regions that, when expanded, violate genome boundaries.
 Defaults to FALSE.}
+
+\item{conditions}{The condition for each dataset. Must be the same length and in the same order as sites.}
 }
 \value{
 If average = TRUE, a single vector containing the average feature density value for each dataset.
 Otherwise, a list of numeric vectors for each dataset containing the number of features within each window.
 }
 \description{
-Calculates the number of features within a defined distance of each integration site.
+Calculates the number of defined features within a defined distance of each integration site.
 }
 \examples{
 library(BSgenome.Hsapiens.UCSC.hs1)
 data(sites)
 data(xobj)
 feats <- rowRanges(xobj)
-feature_density(site.list = sites,
-               features = feats,
-               genome.obj = Hsapiens)
+feature_density(sites = sites,
+                features = feats,
+                genome.obj = Hsapiens)
 
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/join_colData.R
 \name{join_colData}
 \alias{join_colData}
-\title{Combine Column Data}
+\title{Combine Column Data from Multiple xIntOverlap Objects}
 \usage{
 join_colData(..., annotations)
 }

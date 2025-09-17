@@ -2,25 +2,36 @@
 % Please edit documentation in R/global_comparisons.R
 \name{global_comparisons}
 \alias{global_comparisons}
-\title{Global Integration Targeting Comparisons}
+\title{Wrap Basic Global Comparisons}
 \usage{
-global_comparisons(xint.obj, p.adjust.method = "BH")
+global_comparisons(
+  xint.obj,
+  comparison.type = c("glm", "mean", "wilcoxon"),
+  mean.method = c("t.test", "anova"),
+  p.adjust.method = "BH"
+)
 }
 \arguments{
-\item{xint.obj}{The xInt object of interest.}
+\item{xint.obj}{An xIntOverlap object or a list of xIntOverlap objects (output by bulk_comparisons()).}
 
-\item{p.adjust.method}{The p-value adjustment method.
-Defaults to "BH". See \if{html}{\out{<code>}}stats::p.adjust()\if{html}{\out{</code>}} for more information.}
+\item{comparison.type}{One of 'glm', 'mean', or 'wilcoxon'.
+Determines the use of overlap_comparisons(), overlap_mean_tests(), or wilcox_comparisons().}
+
+\item{mean.method}{One of 't.test', or 'anova'. Only used when comparison.type = 'mean'.}
+
+\item{p.adjust.method}{The method to use for p-value adjustments. Defaults to "BH".}
 }
 \value{
-A data frame containing the results of each comparison.
+A data frame containing effect size metrics and p-values for each comparison.
 }
 \description{
-Compare global integration targeting preferences into a given feature-set between infection conditions.
-Comparisons are made using a two-sample t-test.
+A basic wrapper for global comparison functions. Outputs a data frame containing effect size metrics and adjusted
+p-values. Comparisons made via GLM utilize the quasi-Poisson model family and other default parameters in overlap_comparisons().
+This function does not output all of the information returned in the comparison functions themselves.
+For more detailed output, run the functions individually.
 }
 \examples{
 data(xobj)
-global_comparisons(xint.obj = xobj)
+# add examples
 
 }

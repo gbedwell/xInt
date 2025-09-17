@@ -5,7 +5,7 @@
 \alias{sites2}
 \title{Larger Example Data}
 \format{
-An object of class \code{list} of length 1.
+An object of class \code{SiteList} of length 1.
 }
 \source{
 10.1128/mBio.02254-20.

@@ -17,6 +17,6 @@ calc_dG_internal(seqs, vals, len)
 A numeric vector of row means.
 }
 \description{
-Called within calculate_dG().
+Called within calculate_dG.
 Performs the dG calculations across the provided sequences.
 }

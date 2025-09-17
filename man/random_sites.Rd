@@ -4,12 +4,38 @@
 \alias{random_sites}
 \title{Generate Random Sites}
 \usage{
-random_sites(n.sites, genome.obj)
+random_sites(
+  n.sites,
+  genome.obj,
+  n.clones = 0,
+  clone.fracs = 0,
+  chr.omit = c("chrM", "MT"),
+  clone.chroms = NULL,
+  clone.positions = NULL,
+  clone.strands = NULL
+)
 }
 \arguments{
 \item{n.sites}{The number of sites to generate.}
 
 \item{genome.obj}{The BSgenome object of interest.}
+
+\item{n.clones}{The number of clonal sites to generate. Defaults to 0.}
+
+\item{clone.fracs}{A numeric vector defining the fraction of sites occupied by each clone.
+Defaults to 0.}
+
+\item{chr.omit}{A character vector of chromosomes to omit. Defaults to c("chrM", "MT")
+Must be of length == n.clones, all values must be between 0 and 1, and the sum of values must be <= 1.}
+
+\item{clone.chroms}{A vector denoting the chromosome harboring each clonal site. Defaults to NULL.
+If not NULL, must be of length equal to n.clones.}
+
+\item{clone.positions}{A vector denoting the position of each clonal site. Defaults to NULL.
+If not NULL, must be of length equal to n.clones.}
+
+\item{clone.strands}{A vector denoting the strand of each clonal site. Defaults to NULL.
+If not NULL, must be of length equal to n.clones.}
 }
 \value{
 A GRanges object containing the integration site positions.

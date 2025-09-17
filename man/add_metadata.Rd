@@ -55,9 +55,9 @@ Any/all metadata fields can be left blank, if desired.
 }
 \examples{
 add_metadata(virus = "HIV-1",
-            cell.type = "HEK293T",
-            frag.method = "fragmentase",
-            seq.type = "paired-end",
-            read.length = "150 bp")
+             cell.type = "HEK293T",
+             frag.method = "fragmentase",
+             seq.type = "paired-end",
+             read.length = "150 bp")
 
 }

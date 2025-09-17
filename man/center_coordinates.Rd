@@ -4,10 +4,10 @@
 \alias{center_coordinates}
 \title{Center Coordinates}
 \usage{
-center_coordinates(site.list, current.start = 1, tsd = 5, genome.obj = NULL)
+center_coordinates(sites, current.start = 1, tsd = 5, genome.obj = NULL)
 }
 \arguments{
-\item{site.list}{The list or GRangesList containing the mapped site coordinates.}
+\item{sites}{A SiteList object.}
 
 \item{current.start}{The position in the target site duplication currently described by start.
 This is used for centering the site coordinates.}

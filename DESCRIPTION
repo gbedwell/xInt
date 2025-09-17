@@ -7,15 +7,26 @@ Authors@R:
       email = "gregoryjbedwell@gmail.com", 
       role = c("aut", "cre", "cph"),
       comment = c(ORCID = "0000-0003-0456-0032") )
-Depends: limma, SummarizedExperiment, GenomicRanges, BSgenome, R (>= 2.10)
-Imports: S4Vectors, IRanges, GenomeInfoDb, Biostrings, rtracklayer, Rsamtools, GenomicAlignments, GenomicFiles, ggseqlogo, changepoint, parallel, tidyr, tibble, dplyr, edgeR, stats, methods, utils, ggplot2
+Depends: 
+    SummarizedExperiment,
+    GenomicRanges,
+    BSgenome,
+    R (>= 3.5)
+Imports: S4Vectors, IRanges, GenomeInfoDb, Biostrings, rtracklayer, SummarizedExperiment, ggseqlogo, changepoint, stats, 
+  methods, utils, ggplot2, ggsignif, ggrepel, pROC, karyoploteR, signal, BiocParallel
 Suggests: BiocStyle, knitr, rmarkdown, BSgenome.Hsapiens.UCSC.hs1
 VignetteBuilder: knitr
 Description: 
-  xInt is a package for the analysis of genomic integration site data. Functionalities are provided for the efficient calculation of local and global feature overlap, determination of differentially targeted features and/or feature-sets, determination of sequence characteristics surrounding integration sites, generation of experimentally matched random integration site datasets, and more. xInt is designed to streamline many of the most common analyses performed on integration site data.
-biocViews: Genetics, Sequencing, Software, SystemsBiology
+  xInt is a package for the analysis of genomic integration site data. 
+  Functions are provided for the efficient calculation of local and global feature overlap, 
+  determination of differentially targeted features and/or feature-sets, 
+  determination of sequence characteristics surrounding integration sites, 
+  generation of experimentally matched random integration site datasets, 
+  quick data visualization, and more. 
+  xInt will work with any mapped integration site coordinates, irrespective of mapping strategy.
+biocViews: GenomeAnnotation, GeneTarget, FunctionalGenomics, DifferentialPeakCalling, PeakDetection, Sequencing
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 License: GPL-3
 LazyData: false

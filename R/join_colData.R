@@ -1,4 +1,4 @@
-#' Combine Column Data
+#' Combine Column Data from Multiple xIntOverlap Objects
 #'
 #' Combines colData from multiple xIntObjects into a single data frame.
 #' A new 'annotation' column is added to the resulting data frame,
@@ -18,30 +18,30 @@
 #'
 #'@export
 #'
-join_colData <- function( ..., annotations ){
+join_colData <- function(..., annotations){
 
-  if( !all( do.call( c, lapply( list( ... ), validObject ) ) ) ){
-    stop( "All provided objects must be valid xIntObjects.",
-          call. = FALSE )
+  if(!all(do.call(c, lapply( list(...), validObject)))){
+    stop("All provided objects must be valid xIntObjects.",
+         call. = FALSE )
   }
 
-  if( length( list( ... ) ) != length( annotations ) ){
-    stop( "The number of annotations must equal the number of provided objects.",
-          call. = FALSE )
+  if(length(list(...)) != length(annotations)){
+    stop("The number of annotations must equal the number of provided objects.",
+         call. = FALSE )
   }
 
   ll <- lapply(
-    X = list( ... ),
+    X = list(...),
     FUN = function(x){
       dat <- colData(x)
       rownames(dat) <- NULL
-      return( dat )
+      return(dat)
     }
   )
 
-  ll <- Map( function(x, y) { cbind( x, annotation = y ) }, ll, annotations )
+  ll <- Map(function(x, y) {cbind( x, annotation = y)}, ll, annotations)
 
-  df <- data.frame( do.call( rbind, ll ) )
+  df <- data.frame(do.call(rbind, ll))
 
-  return( df )
+  return(df)
 }

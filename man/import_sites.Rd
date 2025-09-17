@@ -11,9 +11,13 @@ import_sites(
   genome.obj = NULL,
   levels.style = NULL,
   keep.metadata = FALSE,
-  return.GRangesList = FALSE,
   sort = TRUE,
-  rm.string = "_sites"
+  rm.string = "_sites",
+  ignore.chr = c("chrM", "MT"),
+  ignore.string = "unique",
+  ric = NULL,
+  expand.by.count = NULL,
+  as.fragments = FALSE
 )
 }
 \arguments{
@@ -21,8 +25,9 @@ import_sites(
 Ideally, the path should only contain the IS datasets of interest.}
 
 \item{files}{A character vector of file names to import.
-Allows flexibility if not all datasets are in the same path.
-Should not be used if \if{html}{\out{<code>}}path\if{html}{\out{</code>}} is defined.}
+Allows flexibility if not all datasets are in the same path or
+if not all files in a given directory are of interest.
+Should not be used if 'path' is defined.}
 
 \item{pattern}{The extension of the integration site dataset files. Defaults to ".bed".}
 
@@ -36,18 +41,31 @@ Seqlevels present in the IS datasets but not present in the genome.obj are remov
 Whether or not the keep metadata contained in the imported datasets.
 Defaults to FALSE.}
 
-\item{return.GRangesList}{Boolean.
-Whether or not the return the list of imported integration site datasets as a GRangesList.
-Defaults to FALSE.}
-
 \item{sort}{Boolean. Whether or not to sort the imported data.
 Sorts seqlevels first, then ranges. Ignores strand.}
 
 \item{rm.string}{A common string/pattern to remove from all imported filenames.
+Files containing this string will still get imported, but the string itself will be removed.
 Defaults to "_sites". Set to NULL to ignore this argument entirely.}
+
+\item{ignore.chr}{Chromosome names to remove from the imported sites.
+Defaults to "c("chrM", "MT")".}
+
+\item{ignore.string}{Filenames containing ignore.string will not be imported.
+This allows greater selectivity in which files get imported.
+Multiple strings can be defined: "stringA|stringB".
+Defaults to "unique".}
+
+\item{ric}{Path to a directory or file containing random integration control sites.}
+
+\item{expand.by.count}{A character vector of length 1 defining the column holding the estimated site abundance values.
+When not NULL (default), the sites in each file are expanded by the corresponding value in the defined column.}
+
+\item{as.fragments}{Boolean. If TRUE, returns a list of GRanges objects instead of a SiteList object.
+Defaults to FALSE.}
 }
 \value{
-A list of GRanges objects or a GRangesList containing mapped integration sites.
+A SiteList object containing mapped integration sites or a list of GRanges objects.
 }
 \description{
 Import a set of integration site datasets from a defined path.

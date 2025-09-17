@@ -4,16 +4,57 @@
 \alias{trim_seqs}
 \title{Trim Fragments}
 \usage{
-trim_seqs(fragments, min.width = 10, max.width = 1000, max.bp = 150)
+trim_seqs(
+  fragments,
+  min.width = 25,
+  max.width = 1200,
+  max.bp = 150,
+  ltr.seq,
+  linker.seq,
+  mismatch.prob = 0.0025,
+  indel.prob = 2.5e-05,
+  base.score = 40,
+  offset = 33,
+  as.fasta = FALSE,
+  noisy.scores = FALSE,
+  use.frag.names = TRUE,
+  read.name.prefix = "fragment_",
+  name.idx.start = 0,
+  paired = TRUE
+)
 }
 \arguments{
 \item{fragments}{The DNAStringSet object containing the random fragment sequences.}
 
-\item{min.width}{The minimum acceptable fragment length (insert size). Defaults to 10.}
+\item{min.width}{The minimum acceptable fragment length (insert size). Defaults to 25.}
 
-\item{max.width}{The maximum acceptable fragment length (insert size). Defaults to 1000.}
+\item{max.width}{The maximum acceptable fragment length (insert size). Defaults to 1200.}
 
 \item{max.bp}{The maximum read length. Defaults to 150 bp.}
+
+\item{ltr.seq}{The LTR sequence sequenced in the experiment, given in the 5' to 3' orientation.
+Should be a character string. Use 'X' for sample-specific barcodes, 'N' for unique per-sequence barcodes.}
+
+\item{linker.seq}{The linker sequence sequenced in the experiment, given in the 5' to 3' orientation.
+Should be a character string. Use 'X' for sample-specific barcodes, 'N' for unique per-sequence barcodes.}
+
+\item{mismatch.prob}{The mismatch rate. Defaults to 0.0025.}
+
+\item{indel.prob}{The indel rate. Defaults to 2.5E-5.}
+
+\item{base.score}{The quality score value to assign to all bases. Offset is added to this value. Default 40.}
+
+\item{offset}{The ASCII offset of the quality scores. Defaults to 33.}
+
+\item{noisy.scores}{Boolean. Whether or not to introduce simulated noise into quality scores. Defaults to FALSE.}
+
+\item{use.frag.names}{Boolean. Whether or not use names from the input fragments for sequence names. Defaults to TRUE.}
+
+\item{read.name.prefix}{The naming prefix for read names. Defaults to "fragment_".}
+
+\item{name.idx.start}{The starting index for the naming scheme. Defaults to 0.}
+
+\item{paired}{Boolean. Whether to generate paired-end reads (TRUE) or single-end reads (FALSE). Defaults to TRUE.}
 }
 \value{
 A list containing simulated R1 and R2 reads.
