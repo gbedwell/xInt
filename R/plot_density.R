@@ -11,6 +11,7 @@
 #' p > 0.05 is 'ns', 0.01 >= p < 0.05 is '*', 0.001 >= p < 0.01 is '**', and p < 0.001 is '***'.
 #' When TRUE, the actual p-values are given.
 #' @param seed Sets the seed in position_jitter(). Defaults to 1.
+#' @param add.legend Boolean. Whether or not to include a legend on the plots. Defaults to TRUE.
 #' 
 #' @return A ggplot2 object.
 #'
@@ -19,7 +20,7 @@
 #' @export
 #'
 plot_density <- function(x, stats.df = NULL, condition.levels = NULL, print.plot = FALSE, y.label = "Genes / Mb",
-                         numeric.p = FALSE, seed = 1) {
+                         numeric.p = FALSE, seed = 1, add.legend = TRUE) {
 
   if(!all(c("sample", "condition", "avg.density") %in% colnames(x))) {
     stop("x must match the output of feature_density().",
@@ -45,12 +46,14 @@ plot_density <- function(x, stats.df = NULL, condition.levels = NULL, print.plot
     print.plot = print.plot, 
     y.label = y.label,
     numeric.p = numeric.p,
-    seed = seed
+    seed = seed,
+    add.legend = add.legend
   )
 
 }
 
-base_dens_plot <- function(x, stats.df = NULL, numeric.p = FALSE, seed = 1, print.plot = FALSE, y.label = "Genes / Mb") {
+base_dens_plot <- function(x, stats.df = NULL, numeric.p = FALSE, seed = 1, print.plot = FALSE, 
+                           y.label = "Genes / Mb", add.legend = TRUE) {
   plot.dat <- x
 
   if(!is.null(stats.df)) {
@@ -114,12 +117,12 @@ base_dens_plot <- function(x, stats.df = NULL, numeric.p = FALSE, seed = 1, prin
         axis.title = element_text(size = 14),
         legend.key = element_blank(),
         legend.key.size = unit(0.5, "cm"),
-        legend.position = "top",
+        legend.position = ifelse(isTRUE(add.legend), "top", "none"),
         legend.box.margin = margin(-10,-10,-10,-10),
         legend.text = element_text(size = 10),
         legend.title = element_blank()
       ) +
-      scale_y_continuous(limits = c(0, y.max)) +
+      scale_y_continuous(limits = c(0, y.max + 0.05)) +
       labs(x = "Condition", y = y.label)
 
   if(print.plot) {

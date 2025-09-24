@@ -11,7 +11,8 @@ plot_density(
   print.plot = FALSE,
   y.label = "Genes / Mb",
   numeric.p = FALSE,
-  seed = 1
+  seed = 1,
+  add.legend = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ p > 0.05 is 'ns', 0.01 >= p < 0.05 is '\emph{', 0.001 >= p < 0.01 is '\strong{',
 When TRUE, the actual p-values are given.}
 
 \item{seed}{Sets the seed in position_jitter(). Defaults to 1.}
+
+\item{add.legend}{Boolean. Whether or not to include a legend on the plots. Defaults to TRUE.}
 }
 \value{
 A ggplot2 object.
