@@ -7,12 +7,13 @@
 #' 'all' will compare every dataset to all other datasets.
 #' This can take a long time.
 #' 'pooled' (default) pools the information by condition and performs pairwise comparisons across conditions.
-#' @param p.adj The method by which to correct p-values for multiple comparisons.
+#' @param test One of 'fisher', 'chi', or 'G'. Defines the statistical test to be performed.
+#' @param p.adjust.method The method by which to correct p-values for multiple comparisons.
 #' Defaults to "BH". See p.adjust() documentation for more details.
 #'
 #' @examples
 #' data(xobj)
-#' prop_tests(xint.obj = xobj, comparison="pooled")
+#' overlap_prop_tests(xint.obj = xobj)
 #'
 #' @importFrom utils combn
 #' @importFrom stats chisq.test fisher.test pchisq p.adjust
@@ -23,12 +24,14 @@
 #'
 #' @export
 #'
-overlap_prop_tests <- function(xint.obj, comparison = c("pooled", "all"), p.adj = "BH"){
+overlap_prop_tests <- function(xint.obj, comparison = c("pooled", "all"), test = c("fisher","chi","G"), p.adjust.method = "BH"){
 
   if(!validObject(xint.obj)) {
     stop("xint.obj is not a valid xIntObject.",
          call. = FALSE)
   }
+
+  test = match.arg(test)
 
   comparison <- match.arg(comparison)
 
@@ -64,35 +67,35 @@ overlap_prop_tests <- function(xint.obj, comparison = c("pooled", "all"), p.adj 
                       n.out[col[1]],
                       n.out[col[2]]),
                     nrow = 2)
-      ft <- fisher.test(x = mat, alternative = "two.sided")$p.value
-      chi <- chisq.test(x = mat)$p.value
-      g <- g.test(x = mat)
+      if(test == "fisher") {
+        ps <- fisher.test(x = mat, alternative = "two.sided")$p.value
+      }  else if(test == "chi") {
+        ps <- chisq.test(x = mat)$p.value
+      } else if(test == "G") {
+        ps <- g.test(x = mat)
+      }
       or <- (n.in[col[2]] / n.out[col[2]]) / (n.in[col[1]] / n.out[col[1]])
       p1 <- 2 * asin(sqrt(frac[col[1]]))
       p2 <- 2 * asin(sqrt(frac[col[2]]))
       pairh <- abs(p2 - p1)
-      rbind(ft, chi, g, or, pairh)
-      },
-    FUN.VALUE = numeric(5)
+      rbind(ps, or, pairh)
+    },
+    FUN.VALUE = numeric(3)
   )
 
-  rownames(pairwise) <- c("fisher", "chi.sq", "g", "or", "h")
+  rownames(pairwise) <- c("p.val", "or", "h")
 
-  or <- pairwise[4,]
-  pairh <- pairwise[5,]
+  or <- pairwise[2,]
+  pairh <- pairwise[3,]
 
   if (ncol(pairwise) > 1) {
-    pairwise <- apply(X = pairwise[1:3,],
-                      MARGIN = 1,
-                      FUN = function(x){
-                        p.adjust(p = x, method = p.adj)
-                      })
-    pairwise <- cbind(pairwise, or, pairh)
+    p.adj <- p.adjust(pairwise[1,], method = p.adjust.method)
+    pairwise <- cbind(p.adj, or, pairh)
   } else{
     pairwise <- t(pairwise)
   }
 
-  colnames(pairwise)[4:5] <- c("or", "h")
+  colnames(pairwise)[2:3] <- c("or", "h")
 
   rownames(pairwise) <- apply(X = combos, MARGIN = 2, FUN = function(x){paste0(x[2], "-", x[1])})
   pairwise <- data.frame(

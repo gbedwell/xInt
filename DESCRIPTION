@@ -11,9 +11,9 @@ Depends:
     SummarizedExperiment,
     GenomicRanges,
     BSgenome,
-    R (>= 3.5)
+    R (>= 4.1)
 Imports: S4Vectors, IRanges, GenomeInfoDb, Biostrings, rtracklayer, SummarizedExperiment, ggseqlogo, changepoint, stats, 
-  methods, utils, ggplot2, ggsignif, ggrepel, pROC, karyoploteR, signal, BiocParallel
+  methods, utils, ggplot2, ggsignif, ggrepel, pROC, karyoploteR, signal, BiocParallel, patchwork
 Suggests: BiocStyle, knitr, rmarkdown, BSgenome.Hsapiens.UCSC.hs1
 VignetteBuilder: knitr
 Description: 

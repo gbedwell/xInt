@@ -4,7 +4,19 @@
 \alias{plot_global_overlap}
 \title{Plot Feature-Set Overlap}
 \usage{
-plot_global_overlap(xint.obj, stats.df = NULL, numeric.p = FALSE, seed = 1)
+plot_global_overlap(
+  xint.obj,
+  stats.df = NULL,
+  numeric.p = FALSE,
+  seed = 1,
+  print.plot = FALSE,
+  add.title = FALSE,
+  wrap = FALSE,
+  add.legend = TRUE,
+  plot.titles = NULL,
+  y.scale = c("percent", "fraction"),
+  ...
+)
 }
 \arguments{
 \item{xint.obj}{An xIntOverlap object.}
@@ -19,6 +31,16 @@ p > 0.05 is 'ns', 0.01 >= p < 0.05 is '\emph{', 0.001 >= p < 0.01 is '\strong{',
 When TRUE, the actual p-values are given.}
 
 \item{seed}{Sets the seed in position_jitter(). Defaults to 1.}
+
+\item{print.plot}{Boolean. Whether or not to print the plot(s). Defaults to FALSE.}
+
+\item{add.title}{Boolean. Whether or not to add the name of the genomic feature to the plot. Defaults to FALSE.}
+
+\item{wrap}{Boolean. Whether or not to wrap a list of plots into a single output. Defaults to FALSE.}
+
+\item{add.legend}{Boolean. Whether or not to include a legend on the plots. Defaults to TRUE.}
+
+\item{plot.titles}{A character vector containing the names of plot titles. Only used with stats.df is NULL and add.titles is TRUE.}
 }
 \value{
 A ggplot2 object.

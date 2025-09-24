@@ -289,7 +289,7 @@ simulate_random <- function(genome.obj,
             batch.seqs <- getSeq(
               x = genome.obj,
               names = batch.frags,
-              as.character = FALSE
+              as.character = TRUE
             )
 
             if (use.frag.names) {

@@ -27,7 +27,7 @@
 #' @param ignore.string Filenames containing ignore.string will not be imported. 
 #' This allows greater selectivity in which files get imported.
 #' Multiple strings can be defined: "stringA|stringB".
-#' Defaults to "unique".
+#' Defaults to "unique". To ignore, set to NULL.
 #' @param expand.by.count A character vector of length 1 defining the column holding the estimated site abundance values.
 #' When not NULL (default), the sites in each file are expanded by the corresponding value in the defined column.
 #' @param as.fragments Boolean. If TRUE, returns a list of GRanges objects instead of a SiteList object.
@@ -81,13 +81,16 @@ import_sites <- function(path, files, pattern = ".bed", genome.obj = NULL, level
     }
   }
 
-  ff <- ff[!grepl(ignore.string, ff)]
+  if(!is.null(ignore.string)) {
+    ff <- ff[!grepl(ignore.string, ff)]
+  }
+  
 
   sites <- lapply(
     X = ff,
     FUN = function(x){
       gr <- import(con = x,
-                   format = sub(pattern=".", replacement = "", x = pattern))
+                   format = sub(pattern = ".*\\.", replacement = "", x = pattern))
 
       if(!is.null(levels.style)){
         seqlevelsStyle(gr) <- levels.style

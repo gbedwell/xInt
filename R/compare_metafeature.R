@@ -9,10 +9,10 @@
 #' Sub-sampling is ignored when NULL.
 #' @param seed The random seed for reproducibility. Defaults to 1.
 #' @param stat The test statistic to compare. One of 'quantiles' (default), 'median', or 'mean'.
-#' @param quantiles The quantiles to calculate when stat = 'quantiles'. Defaults to c(0.4, 0.5, 0.6).
+#' @param quantiles The quantiles to calculate when stat = 'quantiles'. Defaults to c(0.25, 0.5, 0.75).
 #' @param p.adj.method The method used to adjust p-values for multiple comparisons. Defaults to 'BH'.
 #' @param bins The number of bins to use for binning the data. Defaults to 100. When NULL, operates on raw values.
-#' @param combine.method Method for combining p-values when using multiple quantiles. One of 'stouffer' (default) or 'fisher'.
+#' @param combine.method Method for combining p-values when using multiple quantiles. One of 'stouffer' or 'fisher' (default).
 #' 
 #' @return A data frame holding the observed difference, p-value, and adjusted p-value for each comparison.
 #'
@@ -23,9 +23,9 @@
 #'
 
 compare_metafeature <- function(x, n.perm = 1000, sub.samp = 10000, seed = 1, 
-                             stat = c("quantiles", "median", "mean"), 
-                             quantiles = c(0.4, 0.5, 0.6), p.adj.method = "BH",
-                             bins = 100, combine.method = c("stouffer", "fisher")) {
+                                stat = c("quantiles", "median", "mean"), 
+                                quantiles = c(0.25, 0.5, 0.75), p.adj.method = "BH",
+                                bins = NULL, combine.method = c("fisher", "stouffer")) {
 
   if(is.list(x) && !is.data.frame(x)) {
     stop("Input must be a data frame. Re-run metafeature() with 'collapse = TRUE'.", call. = FALSE)

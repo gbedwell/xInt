@@ -13,6 +13,7 @@
 #' @param bp.range A numeric vector of length 2 defining the basepair range to display (e.g., c(-1000, 1000)).
 #' If NULL, uses relative position (0 to 1).
 #' By setting this, you are implying that all features are the same length.
+#' @param y.scale One of "percent" (default) or "fraction". Determines the scale of the y-axis.
 #' 
 #' @return A ggplot2 object for plotting meta-feature distributions.
 #'
@@ -20,7 +21,8 @@
 #'
 #' @export
 #'
-plot_metafeature <- function(x, bins = 100, order = NULL, average.samples = TRUE, shade.under = NULL, bp.range = NULL) {
+plot_metafeature <- function(x, bins = 100, order = NULL, average.samples = TRUE, shade.under = NULL, 
+                             bp.range = NULL, y.scale = c("percent", "fraction")) {
   if(!all(c("rel.position", "dataset") %in% colnames(x))) {
     stop("Input does not look like the output of metafeature().", call. = FALSE)
   }
@@ -28,6 +30,8 @@ plot_metafeature <- function(x, bins = 100, order = NULL, average.samples = TRUE
   if(!is.null(order) && !all(order %in% unique(x$condition))) {
     stop("Not all items in order are present in the input data.", call. = FALSE)
   }
+
+  y.scale = match.arg(y.scale)
   
   split.df <- split(x, f = x$condition)
   
@@ -52,7 +56,13 @@ plot_metafeature <- function(x, bins = 100, order = NULL, average.samples = TRUE
           bin.counts <- table(bin.pos)
           bin.pos <- as.numeric(names(bin.counts))
           bin.counts <- as.numeric(bin.counts)
-          bin.frac <- bin.counts / sum(bin.counts)
+
+          if(y.scale == "percent") {
+            bin.frac <- bin.counts / sum(bin.counts) * 100
+          } else {
+            bin.frac <- bin.counts / sum(bin.counts)
+          }
+          
           data.frame(pos = bin.pos, frac = bin.frac)
         })
         
@@ -148,6 +158,12 @@ plot_metafeature <- function(x, bins = 100, order = NULL, average.samples = TRUE
       scale_fill_discrete(guide = "none")
   }
   
+  if(y.scale == "percent") {
+    y.label <- "Percent Integration"
+  } else {
+    y.label <- "Fraction Integration"
+  }
+
   bin.plot <- bin.plot +
     geom_line(linewidth = 1) +
     geom_ribbon(
@@ -175,7 +191,7 @@ plot_metafeature <- function(x, bins = 100, order = NULL, average.samples = TRUE
     # scale_y_continuous(limits = c(0, NA), expand = c(0, 0)) +
     labs(
       x = x.label,
-      y = "Integration Fraction"
+      y = y.label
     )
   
   return(bin.plot)

@@ -112,6 +112,10 @@ contrast_stats <- function(x, contrast = Inf, n.hits = Inf,
 
     rownames(combined.results) <- NULL
 
+    if(all(combined.results$feature == "global")) {
+      combined.results$p.adj <- p.adjust(p = combined.results$p.val, method = p.adjust.method)
+    }
+
     return(combined.results)
   }
 
@@ -171,6 +175,10 @@ contrast_stats <- function(x, contrast = Inf, n.hits = Inf,
   }
 
   rownames(results.df) <- NULL
+
+  if(all(results.df$feature == "global")) {
+    results.df$p.adj <- p.adjust(p = results.df$p.val, method = p.adjust.method)
+  }
 
   return(results.df)
 }

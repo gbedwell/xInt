@@ -10,10 +10,10 @@ compare_metafeature(
   sub.samp = 10000,
   seed = 1,
   stat = c("quantiles", "median", "mean"),
-  quantiles = c(0.4, 0.5, 0.6),
+  quantiles = c(0.25, 0.5, 0.75),
   p.adj.method = "BH",
-  bins = 100,
-  combine.method = c("stouffer", "fisher")
+  bins = NULL,
+  combine.method = c("fisher", "stouffer")
 )
 }
 \arguments{
@@ -28,13 +28,13 @@ Sub-sampling is ignored when NULL.}
 
 \item{stat}{The test statistic to compare. One of 'quantiles' (default), 'median', or 'mean'.}
 
-\item{quantiles}{The quantiles to calculate when stat = 'quantiles'. Defaults to c(0.4, 0.5, 0.6).}
+\item{quantiles}{The quantiles to calculate when stat = 'quantiles'. Defaults to c(0.25, 0.5, 0.75).}
 
 \item{p.adj.method}{The method used to adjust p-values for multiple comparisons. Defaults to 'BH'.}
 
 \item{bins}{The number of bins to use for binning the data. Defaults to 100. When NULL, operates on raw values.}
 
-\item{combine.method}{Method for combining p-values when using multiple quantiles. One of 'stouffer' (default) or 'fisher'.}
+\item{combine.method}{Method for combining p-values when using multiple quantiles. One of 'stouffer' or 'fisher' (default).}
 }
 \value{
 A data frame holding the observed difference, p-value, and adjusted p-value for each comparison.

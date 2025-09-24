@@ -10,7 +10,8 @@ plot_metafeature(
   order = NULL,
   average.samples = TRUE,
   shade.under = NULL,
-  bp.range = NULL
+  bp.range = NULL,
+  y.scale = c("percent", "fraction")
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ Helps highlight deviations from the reference.}
 \item{bp.range}{A numeric vector of length 2 defining the basepair range to display (e.g., c(-1000, 1000)).
 If NULL, uses relative position (0 to 1).
 By setting this, you are implying that all features are the same length.}
+
+\item{y.scale}{One of "percent" (default) or "fraction". Determines the scale of the y-axis.}
 }
 \value{
 A ggplot2 object for plotting meta-feature distributions.

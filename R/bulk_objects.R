@@ -10,11 +10,11 @@
 #' @param min.overlap The minimum amount of overlap to count two regions as overlapping.
 #' Defaults to 1.
 #' @param id.col The ID column in the features GRanges object. Default "name".
-#' @param features.list The list containing to different feature-sets.
+#' @param features The list containing to different feature-sets.
 #' @param type The type of xInt object to construct. 
 #' Can be "overlap" for xIntOverlap (default) or "nearest" for xIntNearest.
-#' @param feature.names A character vector of names for each feature in features.list.
-#' When NULL (default), features.list must be named.
+#' @param feature.names A character vector of names for each feature in features.
+#' When NULL (default), features must be named.
 #' @param ric.dat A separate SiteList object for random integration control sites.
 #' Can be NULL (default).
 #'
@@ -22,7 +22,7 @@
 #'
 #' @export
 
-bulk_objects <- function(sites, conditions, condition.levels, features.list,
+bulk_objects <- function(sites, conditions, condition.levels, features,
                          type = c("overlap", "nearest"), feature.names = NULL,
                          min.overlap = 1, id.col = "name", ric.dat = NULL){
 
@@ -31,18 +31,18 @@ bulk_objects <- function(sites, conditions, condition.levels, features.list,
          call. = FALSE )
   }
 
-  if(!is.list(features.list)) {
-    stop("features.list must be a list.", call. = FALSE)
+  if(!is.list(features)) {
+    stop("features must be a list.", call. = FALSE)
   }
 
   type = match.arg(type)
   
   if(is.null(feature.names)){
-    if(is.null(names(features.list))){
-      stop("features.list must be named if feature.names is NULL.")
+    if(is.null(names(features))){
+      stop("features must be named if feature.names is NULL.")
     }
     else{
-      feature.names <- names(features.list)
+      feature.names <- names(features)
     }
   }
 
@@ -52,7 +52,7 @@ bulk_objects <- function(sites, conditions, condition.levels, features.list,
     for (i in seq_along(feature.names)) {
       overlap.objects[[i]] <- make_xIntOverlap(
         sites = sites,
-        features = features.list[[i]],
+        features = features[[i]],
         conditions = conditions,
         condition.levels = condition.levels,
         min.overlap = min.overlap,
@@ -80,7 +80,7 @@ bulk_objects <- function(sites, conditions, condition.levels, features.list,
       for (i in seq_along(feature.names)) {
         nearest.objects[[i]] <- make_xIntNearest(
           sites = sites,
-          features = features.list[[i]],
+          features = features[[i]],
           conditions = conditions,
           condition.levels = condition.levels
         )

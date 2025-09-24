@@ -4,15 +4,15 @@
 #'
 #' @param x The output of feature_density() with options average = TRUE and conditions are given.
 #' @param p.adjust.method Method for p-value adjustment. Default is "BH" (Benjamini-Hochberg).
-#' @param method Statistical test to use. Either 't.test' (default) or 'anova'.
+#' @param test Statistical test to use. Either 't.test' (default) or 'anova'.
 #'
 #' @return A data frame containing the results of statistical comparisons between conditions.
 #'
 #' @export
 #'
-compare_density <- function(x, p.adjust.method = "BH", method = c("t.test", "anova")) {
+compare_density <- function(x, p.adjust.method = "BH", test = c("t.test", "anova")) {
   
-  method <- match.arg(method)
+  test <- match.arg(test)
   
   if(!all(c("sample", "condition", "avg.density") %in% colnames(x))) {
     stop("x must match the output of feature_density().",
@@ -42,7 +42,7 @@ compare_density <- function(x, p.adjust.method = "BH", method = c("t.test", "ano
          call. = FALSE)
   }
   
-  if(method == "anova") {
+  if(test == "anova") {
     if(length(single.rep) == 0) {
       # All conditions have replicates, perform ANOVA
       dens.aov <- aov(avg.density ~ condition, data = x)

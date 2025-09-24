@@ -54,7 +54,7 @@ Defaults to "c("chrM", "MT")".}
 \item{ignore.string}{Filenames containing ignore.string will not be imported.
 This allows greater selectivity in which files get imported.
 Multiple strings can be defined: "stringA|stringB".
-Defaults to "unique".}
+Defaults to "unique". To ignore, set to NULL.}
 
 \item{ric}{Path to a directory or file containing random integration control sites.}
 

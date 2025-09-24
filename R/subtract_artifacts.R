@@ -2,12 +2,12 @@
 #'
 #' Subtract potentially artifactual integration sites from all other datasets.
 #'
-#' @param site.list A list of GRanges objects or a GRangesList containing integration site datasets.
-#' @param artifact.datasets A character vector containing the names of artifactual datasets in site.list
-#' or a numeric vector containing the indices of artifactual datasets in site.list.
+#' @param sites A SiteList object.
+#' @param artifact.datasets A character vector containing the names of artifactual datasets in sites
+#' or a numeric vector containing the indices of artifactual datasets in sites.
 #' These datasets are removed from the output.
 #' @param artifact.sites A single GRanges object containing the artifactual sites to be removed from 
-#' all entries in site.list.
+#' all entries in sites.
 #'
 #' @return A list of GRanges objects or a GRangesList containing the subtracted integration site datasets.
 #'
@@ -16,12 +16,12 @@
 #'
 #' @export
 #'
-subtract_artifacts <- function(site.list,
+subtract_artifacts <- function(sites,
                                artifact.datasets = NULL,
                                artifact.sites = NULL){
 
-  if( !validObject( site.list ) ){
-    stop("site.list is not a valid SiteListObject.",
+  if(!validObject(sites) ){
+    stop("sites is not a valid SiteList object.",
          call. = FALSE)
   }
 
@@ -32,14 +32,14 @@ subtract_artifacts <- function(site.list,
   if(!is.null(artifact.datasets)){
     if(!is.character(artifact.datasets)){
         if(is.numeric(artifact.datasets)){
-          artifact.datasets <- names(site.list)[artifact.datasets]
+          artifact.datasets <- names(sites)[artifact.datasets]
           } else{
             stop("artifact.datasets must be a numeric or character vector.",
-                call. = FALSE)
+                 call. = FALSE)
           }
       }
     from.dataset <- c(
-      unlist(as(site.list[which(names(site.list) %in% artifact.datasets)]), "GRangesList"),
+      unlist(as(sites[which(names(sites) %in% artifact.datasets)]), "GRangesList"),
     )
   } else{
     from.dataset <- GRanges()
@@ -54,17 +54,28 @@ subtract_artifacts <- function(site.list,
   
   to.remove <- c(from.dataset, from.gr)
 
+  if(length(to.remove) == 0) {
+    warning("No artifact sites to remove.", call. = FALSE)
+    return(sites)
+  }
+
+  if(!is.null(artifact.datasets)) {
+    sites <- sites[-which(names(sites) %in% artifact.datasets)]
+  }
+
   sub.sites <- lapply(
-    X = site.list[-which(names(site.list) %in% artifact.datasets)],
+    X = sites,
     FUN = function(x){
       ss <- subtract(x = x, y = to.remove, minoverlap = 1L, ignore.strand = FALSE)
       unlist(as(ss, "GRangesList"))
       }
     )
+  
+  sub.sites <- sub.sites[lengths(sub.sites) > 0]
 
-    if(is(site.list, "GRangesList")){
-      sub.sites <- as(sub.sites, "GRangesList")
-    }
+  if(is(sites, "GRangesList")){
+    sub.sites <- as(sub.sites, "GRangesList")
+  }
 
-    return(sub.sites)
+  return(sub.sites)
 }

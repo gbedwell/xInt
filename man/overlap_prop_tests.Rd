@@ -4,7 +4,12 @@
 \alias{overlap_prop_tests}
 \title{Global Overlap Comparisons Using Proportion Tests}
 \usage{
-overlap_prop_tests(xint.obj, comparison = c("pooled", "all"), p.adj = "BH")
+overlap_prop_tests(
+  xint.obj,
+  comparison = c("pooled", "all"),
+  test = c("fisher", "chi", "G"),
+  p.adjust.method = "BH"
+)
 }
 \arguments{
 \item{xint.obj}{The xIntObject containing the relevant data.}
@@ -14,7 +19,9 @@ overlap_prop_tests(xint.obj, comparison = c("pooled", "all"), p.adj = "BH")
 This can take a long time.
 'pooled' (default) pools the information by condition and performs pairwise comparisons across conditions.}
 
-\item{p.adj}{The method by which to correct p-values for multiple comparisons.
+\item{test}{One of 'fisher', 'chi', or 'G'. Defines the statistical test to be performed.}
+
+\item{p.adjust.method}{The method by which to correct p-values for multiple comparisons.
 Defaults to "BH". See p.adjust() documentation for more details.}
 }
 \value{
@@ -25,6 +32,6 @@ Perform global pairwise comparisons on an xIntOverlap object using tests for equ
 }
 \examples{
 data(xobj)
-prop_tests(xint.obj = xobj, comparison="pooled")
+overlap_prop_tests(xint.obj = xobj)
 
 }

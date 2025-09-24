@@ -263,6 +263,8 @@ setMethod("sapply", "SiteList", function(X, FUN, ..., simplify = TRUE, USE.NAMES
   return(sapply(X@sites, FUN, ..., simplify = simplify, USE.NAMES = USE.NAMES))
 })
 
+#TO-DO: Write a method to combine two or more SiteList objects into a single SiteList object
+
 #' xIntNearest class
 #'
 #' @description

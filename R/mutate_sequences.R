@@ -32,6 +32,6 @@ mutate_sequences <- function(seq, mismatch.prob = 0.0025, indel.prob = 2.5E-5, m
   }
 
   bases <- paste0(bases, collapse = "")
-  bases <- bases[1:min(max.bp, length(bases))]
-  DNAString(bases)
+  bases <- substr(bases, 1, max.bp)
+  as.character(DNAString(bases))
 }

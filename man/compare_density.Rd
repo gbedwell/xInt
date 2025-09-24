@@ -4,14 +4,14 @@
 \alias{compare_density}
 \title{Compare Feature Density Between Conditions}
 \usage{
-compare_density(x, p.adjust.method = "BH", method = c("t.test", "anova"))
+compare_density(x, p.adjust.method = "BH", test = c("t.test", "anova"))
 }
 \arguments{
 \item{x}{The output of feature_density() with options average = TRUE and conditions are given.}
 
 \item{p.adjust.method}{Method for p-value adjustment. Default is "BH" (Benjamini-Hochberg).}
 
-\item{method}{Statistical test to use. Either 't.test' (default) or 'anova'.}
+\item{test}{Statistical test to use. Either 't.test' (default) or 'anova'.}
 }
 \value{
 A data frame containing the results of statistical comparisons between conditions.

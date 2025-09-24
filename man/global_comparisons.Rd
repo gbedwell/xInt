@@ -6,18 +6,21 @@
 \usage{
 global_comparisons(
   xint.obj,
-  comparison.type = c("glm", "mean", "wilcoxon"),
-  mean.method = c("t.test", "anova"),
+  comparison.type = c("glm", "mean", "wilcoxon", "prop"),
+  mean.test = c("t.test", "anova"),
+  prop.test = c("fisher", "chi", "G"),
   p.adjust.method = "BH"
 )
 }
 \arguments{
 \item{xint.obj}{An xIntOverlap object or a list of xIntOverlap objects (output by bulk_comparisons()).}
 
-\item{comparison.type}{One of 'glm', 'mean', or 'wilcoxon'.
-Determines the use of overlap_comparisons(), overlap_mean_tests(), or wilcox_comparisons().}
+\item{comparison.type}{One of 'glm', 'mean', 'wilcoxon', or 'prop'.
+Determines the use of overlap_comparisons(), overlap_mean_tests(), wilcox_comparisons(), or overlap_prop_tests().}
 
-\item{mean.method}{One of 't.test', or 'anova'. Only used when comparison.type = 'mean'.}
+\item{mean.test}{One of 't.test', or 'anova'. Only used when comparison.type = 'mean'.}
+
+\item{prop.test}{One of 'fisher', 'chi', or 'G'. Only used when comparison.type = 'prop'.}
 
 \item{p.adjust.method}{The method to use for p-value adjustments. Defaults to "BH".}
 }

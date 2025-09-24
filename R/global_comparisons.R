@@ -6,9 +6,10 @@
 #' For more detailed output, run the functions individually.
 #'
 #' @param xint.obj An xIntOverlap object or a list of xIntOverlap objects (output by bulk_comparisons()).
-#' @param comparison.type One of 'glm', 'mean', or 'wilcoxon'. 
-#' Determines the use of overlap_comparisons(), overlap_mean_tests(), or wilcox_comparisons().
-#' @param mean.method One of 't.test', or 'anova'. Only used when comparison.type = 'mean'.
+#' @param comparison.type One of 'glm', 'mean', 'wilcoxon', or 'prop'. 
+#' Determines the use of overlap_comparisons(), overlap_mean_tests(), wilcox_comparisons(), or overlap_prop_tests().
+#' @param mean.test One of 't.test', or 'anova'. Only used when comparison.type = 'mean'.
+#' @param prop.test One of 'fisher', 'chi', or 'G'. Only used when comparison.type = 'prop'.
 #' @param p.adjust.method The method to use for p-value adjustments. Defaults to "BH".
 #'
 #' @return A data frame containing effect size metrics and p-values for each comparison.
@@ -19,12 +20,15 @@
 #'
 #' @export
 #'
-global_comparisons <- function(xint.obj, comparison.type = c("glm", "mean", "wilcoxon"), 
-                               mean.method = c("t.test", "anova"), p.adjust.method = "BH") {
+global_comparisons <- function(xint.obj, comparison.type = c("glm", "mean", "wilcoxon", "prop"), 
+                               mean.test = c("t.test", "anova"), prop.test = c("fisher", "chi", "G"), 
+                               p.adjust.method = "BH") {
   comparison.type <- match.arg(comparison.type)
 
   if(comparison.type == "mean") {
-    mean.method <- match.arg(mean.method)
+    mean.test <- match.arg(mean.test)
+  } else if(comparison.type == "prop") {
+    prop.test = match.arg(prop.test)
   }
 
   p.adjust.method <- match.arg(p.adjust.method)
@@ -46,13 +50,19 @@ global_comparisons <- function(xint.obj, comparison.type = c("glm", "mean", "wil
           comparisons <- overlap_comparisons(xint.obj = xo, type = "global")
           comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
         } else if(comparison.type == "mean") {
-          comparisons <- overlap_mean_tests(xint.obj = xo, method = mean.method, p.adjust.method = p.adjust.method)
+          comparisons <- overlap_mean_tests(xint.obj = xo, method = mean.test, p.adjust.method = p.adjust.method)
         } else if(comparison.type == "wilcoxon") {
           comparison <- wilcox_comparisons(xint.obj = xo, type = "global")
           comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
+        } else if(comparison.type == "prop") {
+          comparisons <- overlap_prop_tests(xint.obj = xo, comparison = "pooled", p.adjust.method = p.adjust.method)
+        }
+        
+        if(!"p.val" %in% colnames(comparisons)) {
+          comparisons$p.val <- comparisons$p.adj
         }
 
-        comparisons <- comparisons[ , c("comparison", "p.adj")]
+        comparisons <- comparisons[ , c("comparison", "p.val", "p.adj")]
         roc <- overlap_effect(xint.obj = xo)
         tmp <- merge(roc, comparisons, by = "comparison", all = TRUE)
         return(tmp)
@@ -65,10 +75,12 @@ global_comparisons <- function(xint.obj, comparison.type = c("glm", "mean", "wil
       comparisons <- overlap_comparisons(xint.obj = xint.obj, type = "global")
       comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
     } else if(comparison.type == "mean") {
-      comparisons <- overlap_mean_tests(xint.obj = xint.obj, method = mean.method, p.adjust.method = p.adjust.method)
+      comparisons <- overlap_mean_tests(xint.obj = xint.obj, method = mean.test, p.adjust.method = p.adjust.method)
     } else if(comparison.type == "wilcoxon") {
       comparisons <- wilcox_comparisons(xint.obj = xint.obj, type = "global")
       comparisons <- contrast_stats(x = comparisons, contrast = Inf, p.adjust.method = p.adjust.method)
+    } else if(comparison.type == "prop") {
+      comparisons <- overlap_prop_tests(xint.obj = xo, comparison = "pooled", p.adjust.method = p.adjust.method)
     }
 
     if(!"p.val" %in% colnames(comparisons)) {
@@ -80,8 +92,8 @@ global_comparisons <- function(xint.obj, comparison.type = c("glm", "mean", "wil
     roc <- overlap_effect(xint.obj = xint.obj)
 
     result <- merge(roc, comparisons, by = "comparison", all = TRUE)
-  
-  return(result)
   }
 
+  result$feature <- gsub(".\\d+", "", row.names(result))
+  return(result)
 }

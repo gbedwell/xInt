@@ -8,7 +8,7 @@ bulk_objects(
   sites,
   conditions,
   condition.levels,
-  features.list,
+  features,
   type = c("overlap", "nearest"),
   feature.names = NULL,
   min.overlap = 1,
@@ -23,13 +23,13 @@ bulk_objects(
 All entries should be present in conditions.
 Length should be the number of unique conditions.}
 
-\item{features.list}{The list containing to different feature-sets.}
+\item{features}{The list containing to different feature-sets.}
 
 \item{type}{The type of xInt object to construct.
 Can be "overlap" for xIntOverlap (default) or "nearest" for xIntNearest.}
 
-\item{feature.names}{A character vector of names for each feature in features.list.
-When NULL (default), features.list must be named.}
+\item{feature.names}{A character vector of names for each feature in features.
+When NULL (default), features must be named.}
 
 \item{min.overlap}{The minimum amount of overlap to count two regions as overlapping.
 Defaults to 1.}

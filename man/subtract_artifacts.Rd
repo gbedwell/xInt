@@ -4,17 +4,17 @@
 \alias{subtract_artifacts}
 \title{Subtract Artifact Sites}
 \usage{
-subtract_artifacts(site.list, artifact.datasets = NULL, artifact.sites = NULL)
+subtract_artifacts(sites, artifact.datasets = NULL, artifact.sites = NULL)
 }
 \arguments{
-\item{site.list}{A list of GRanges objects or a GRangesList containing integration site datasets.}
+\item{sites}{A SiteList object.}
 
-\item{artifact.datasets}{A character vector containing the names of artifactual datasets in site.list
-or a numeric vector containing the indices of artifactual datasets in site.list.
+\item{artifact.datasets}{A character vector containing the names of artifactual datasets in sites
+or a numeric vector containing the indices of artifactual datasets in sites.
 These datasets are removed from the output.}
 
 \item{artifact.sites}{A single GRanges object containing the artifactual sites to be removed from
-all entries in site.list.}
+all entries in sites.}
 }
 \value{
 A list of GRanges objects or a GRangesList containing the subtracted integration site datasets.

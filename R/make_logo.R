@@ -13,6 +13,7 @@
 #' This is used along with current.start for centering the integration site coordinates.
 #' @param n.samp If not NULL, the number of sites to sample from a given dataset. This can significantly speed up processing time,
 #' at the expense of including every site in the sequence logo.
+#' @param seed The seed value for random sampling.
 #' @param return.plot Boolean.
 #' Whether or not to return logos for each dataset in sites instead of the consensus matrix.
 #' Defaults to TRUE.
@@ -22,9 +23,9 @@
 #' Whether or not to wrap the returned plots into a single output.
 #' When TRUE, arguments ncol and nrow can be used to format the output.
 #'
-#' @return If return.plot = TRUE, a list of ggplot2 objects containing sequence logos
+#' @return If return.plot = TRUE, a list of ggplot2 objects or a single ggplot2 object containing sequence logos
 #' for the mapped integration site datasets in sites.
-#' If return.plot = FALSE, a list of consensus matrices for each integration site dataset.
+#' If return.plot = FALSE, a list of consensus matrices for each entry in sites.
 #'
 #' @examples
 #' library(BSgenome.Hsapiens.UCSC.hs1)
@@ -40,7 +41,8 @@
 #' @export
 #'
 make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
-                      current.start = 1, tsd = 5, n.samp = NULL, return.plot = TRUE, wrap = FALSE, ... ){
+                      current.start = 1, tsd = 5, n.samp = NULL, seed = NULL,
+                      return.plot = TRUE, wrap = FALSE, ... ){
 
   if(!validObject(sites)){
     stop("sites is not a valid SiteListObject.",
@@ -51,6 +53,19 @@ make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
     warning("seq.len cannot be odd. Subtracting 1 from seq.len.")
     seq.len <- seq.len - 1
     }
+  
+  if(!is.null(seed)) {
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+      old.seed <- .Random.seed
+      on.exit({ .Random.seed <<- old.seed }, add = TRUE)
+    } else {
+      on.exit({ 
+        if (exists(".Random.seed", envir = .GlobalEnv)) {
+          rm(.Random.seed, envir = .GlobalEnv)
+        }
+      }, add = TRUE)
+    }
+  }
 
   expanded.sites <- expand_sites(
     sites = sites@sites,
@@ -68,13 +83,17 @@ make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
         return(x)
         })}
 
-  if (!is.null(n.samp)) {
+  if(!is.null(n.samp)) {
+    if(!is.null(seed)) {
+      set.seed(seed)
+    }
     expanded.sites <- lapply(
       X = expanded.sites,
       FUN = function(x){
         if (length(x) > n.samp){
           sample(x = x, size = n.samp, replace = FALSE)
-        } else {x}})}
+        } else {x}})
+  }
 
   if(!isTRUE(return.plot)) {
     seqs <- getSeq(
@@ -86,7 +105,7 @@ make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
     mat.list <- lapply(
       X = seqs,
       FUN = function(x){
-        consensusMatrix(x, baseOnly = TRUE)
+        consensusMatrix(x, baseOnly = TRUE)[seq(1,4),]
         })
 
     return(mat.list)
@@ -106,12 +125,15 @@ make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
     if(tsd %% 2 == 1){
       mp <- (seq.len / 2)
       zp <- mp - (center - 1)
+      offset <- 1
     } else{
       mp <- seq.len / 2
       zp <- mp - (floor(center) - 1)
+      offset <- 0
     }
 
-    p.labs <- seq_len(seq.len) - zp
+    # p.labs <- seq_len(seq.len) - zp
+    p.labs <- seq(1, (seq.len - offset)) - zp
 
     if(!isTRUE(wrap)){
       logo.p <- lapply(
@@ -119,12 +141,12 @@ make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
         FUN = function(x){
           ss <- seqs[[x]]
 
-          ggseqlogo( data = ss, seq_type = "dna", ... ) +
+          ggseqlogo(data = ss, seq_type = "dna", ...) +
             theme_bw() +
             theme(axis.text.y=element_text(size=14),
                   axis.text.x=element_text(size=12),
                   axis.title=element_text(size=16)) +
-            scale_x_continuous(breaks=seq( 1, seq.len, 1 ),
+            scale_x_continuous(breaks=seq(1, seq.len, 1),
                                 labels=p.labs,
                                 expand=c(0,0)) +
             scale_y_continuous(expand=c(0,0)) +
