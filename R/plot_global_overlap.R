@@ -141,7 +141,7 @@ base_overlap_plot <- function(xint.obj, stats.df = NULL, numeric.p = FALSE, seed
     )
     y.max <- plot.limits[2]
   } else {
-    y.max <- ifelse(y.scale == "perecent", 100, 1)
+    y.max <- ifelse(y.scale == "percent", 100, 1)
   }
 
   p <- ggplot(plot.dat) +

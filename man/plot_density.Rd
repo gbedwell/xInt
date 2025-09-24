@@ -9,15 +9,27 @@ plot_density(
   stats.df = NULL,
   condition.levels = NULL,
   print.plot = FALSE,
-  plot.title = NULL
+  y.label = "Genes / Mb",
+  numeric.p = FALSE,
+  seed = 1
 )
 }
 \arguments{
 \item{x}{The output of feature_density() with options average = TRUE and conditions are given.}
 
+\item{stats.df}{The output of compare_density().}
+
+\item{condition.levels}{The condition levels for the samples. If NULL (default), the levels are created in the order they appear.}
+
 \item{print.plot}{Boolean. Whether or not to print the plot(s). Defaults to FALSE.}
 
-\item{plot.title}{The title of the plot. When NULL, no title is added to the plot.}
+\item{y.label}{The label of the y-axis. Defaults to "Genes / Mb".}
+
+\item{numeric.p}{Boolean. When FALSE (default), significance is denoted symbolically.
+p > 0.05 is 'ns', 0.01 >= p < 0.05 is '\emph{', 0.001 >= p < 0.01 is '\strong{', and p < 0.001 is '}}'.
+When TRUE, the actual p-values are given.}
+
+\item{seed}{Sets the seed in position_jitter(). Defaults to 1.}
 }
 \value{
 A ggplot2 object.
