@@ -132,8 +132,8 @@ make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
       offset <- 0
     }
 
-    # p.labs <- seq_len(seq.len) - zp
-    p.labs <- seq(1, (seq.len - offset)) - zp
+    p.labs <- seq_len(seq.len) - zp
+    # p.labs <- seq(1, (seq.len - offset)) - zp
 
     if(!isTRUE(wrap)){
       logo.p <- lapply(
