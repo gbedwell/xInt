@@ -64,12 +64,12 @@ base_dens_plot <- function(x, stats.df = NULL, numeric.p = FALSE, seed = 1, prin
                                 ifelse(stats.df$p.adj < 0.01 & stats.df$p.adj >= 0.001, "**",
                                       ifelse(stats.df$p.adj < 0.001, "***", NA))))
     
-    annotation.pos <- calculate_annotation_positions(
+    annotation.pos <- calculate_annotation_positions2(
       dat = plot.dat,
       stats.df = stats.df
     )
 
-    plot.limits <- calculate_plot_limits(
+    plot.limits <- calculate_plot_limits2(
       dat = plot.dat, 
       stats.df = stats.df, 
       annotation.positions = annotation.pos
@@ -139,7 +139,7 @@ base_dens_plot <- function(x, stats.df = NULL, numeric.p = FALSE, seed = 1, prin
 }
 
 
-calculate_annotation_positions <- function(dat, stats.df, base.offset = 0.05, 
+calculate_annotation_positions2 <- function(dat, stats.df, base.offset = 0.05, 
                                            step.size = 0.1, min.gap = 2) {
   dens.max <- max(dat$avg.density)
   scale.range <- 10 * (dens.max %/% 10 + as.logical(dens.max %% 10))
@@ -167,7 +167,7 @@ calculate_annotation_positions <- function(dat, stats.df, base.offset = 0.05,
   return(positions)
 }
 
-calculate_plot_limits <- function(dat, stats.df, annotation.positions, 
+calculate_plot_limits2 <- function(dat, stats.df, annotation.positions, 
                                   buffer = 0.05) {
   
   dens.max <- max(dat$avg.density)
