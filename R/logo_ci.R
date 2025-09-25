@@ -3,8 +3,8 @@
 #' Estimates credible intervals for each base at each position in a sequence logo.
 #'
 #' @param sites A SiteList object.
-#' @param seq.len The desired length of the expanded sequences.
 #' @param genome.obj The BSgenome object for the genome of interest.
+#' @param seq.len The desired length of the expanded sequences.
 #' @param ignore.strand Boolean. Whether or not to ignore strandedness when extracting sequences.
 #' Defaults to FALSE. If TRUE, the sequence from the forward strand is returned.
 #' @param current.start The position in the target site duplication currently described by the start coordinates in sites.
@@ -45,7 +45,7 @@
 #'
 #' @export
 #'
-logo_ci <- function(sites, seq.len = 12, genome.obj, ignore.strand = FALSE, current.start = 1, 
+logo_ci <- function(sites, genome.obj, seq.len = 12, ignore.strand = FALSE, current.start = 1, 
                     tsd = 5, alpha = c(A = 0.3, C = 0.2, G = 0.2, T = 0.3), ci = c(0.025, 0.975), seq.samp = NULL, dir.samp = 5000, 
                     seed = NULL, return.plot = TRUE, add.title = FALSE, wrap = FALSE, ...) {
   

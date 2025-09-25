@@ -6,8 +6,8 @@
 \usage{
 make_logo(
   sites,
-  seq.len = 24,
   genome.obj,
+  seq.len = 24,
   ignore.strand = FALSE,
   current.start = 1,
   tsd = 5,
@@ -21,9 +21,9 @@ make_logo(
 \arguments{
 \item{sites}{A SiteList object.}
 
-\item{seq.len}{The desired length of the expanded sequences.}
-
 \item{genome.obj}{The BSgenome object for the genome of interest.}
+
+\item{seq.len}{The desired length of the expanded sequences.}
 
 \item{ignore.strand}{Boolean. Whether or not to ignore strandedness when extracting sequences.
 Defaults to FALSE. If TRUE, the sequence from the forward strand is returned.}

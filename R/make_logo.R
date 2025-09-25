@@ -3,8 +3,8 @@
 #' Generates sequence logos or consensus matrices from SiteList objects.
 #'
 #' @param sites A SiteList object.
-#' @param seq.len The desired length of the expanded sequences.
 #' @param genome.obj The BSgenome object for the genome of interest.
+#' @param seq.len The desired length of the expanded sequences.
 #' @param ignore.strand Boolean. Whether or not to ignore strandedness when extracting sequences.
 #' Defaults to FALSE. If TRUE, the sequence from the forward strand is returned.
 #' @param current.start The position in the target site duplication currently described by the start coordinates in sites.
@@ -40,7 +40,7 @@
 #'
 #' @export
 #'
-make_logo <- function(sites, seq.len = 24, genome.obj, ignore.strand = FALSE,
+make_logo <- function(sites, genome.obj, seq.len = 24, ignore.strand = FALSE,
                       current.start = 1, tsd = 5, n.samp = NULL, seed = NULL,
                       return.plot = TRUE, wrap = FALSE, ... ){
 

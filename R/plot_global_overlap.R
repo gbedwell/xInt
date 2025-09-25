@@ -14,7 +14,7 @@
 #' @param print.plot Boolean. Whether or not to print the plot(s). Defaults to FALSE.
 #' @param add.title Boolean. Whether or not to add the name of the genomic feature to the plot. Defaults to FALSE.
 #' @param wrap Boolean. Whether or not to wrap a list of plots into a single output. Defaults to FALSE.
-#' @param add.legend Boolean. Whether or not to include a legend on the plots. Defaults to TRUE.
+#' @param add.legend Boolean. Whether or not to include a legend on the plots. Defaults to FALSE.
 #' @param plot.titles A character vector containing the names of plot titles. Only used with stats.df is NULL and add.titles is TRUE.
 #' 
 #' @return A ggplot2 object.
@@ -26,7 +26,7 @@
 #' @export
 #'
 plot_global_overlap <- function(xint.obj, stats.df = NULL, numeric.p = FALSE, seed = 1, print.plot = FALSE,
-                                add.title = FALSE, wrap = FALSE, add.legend = TRUE, plot.titles = NULL, 
+                                add.title = FALSE, wrap = FALSE, add.legend = FALSE, plot.titles = NULL, 
                                 y.scale = c("percent", "fraction"), ...) {
 
   if(!is.null(stats.df)) {

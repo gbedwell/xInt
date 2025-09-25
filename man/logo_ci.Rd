@@ -6,8 +6,8 @@
 \usage{
 logo_ci(
   sites,
-  seq.len = 12,
   genome.obj,
+  seq.len = 12,
   ignore.strand = FALSE,
   current.start = 1,
   tsd = 5,
@@ -25,9 +25,9 @@ logo_ci(
 \arguments{
 \item{sites}{A SiteList object.}
 
-\item{seq.len}{The desired length of the expanded sequences.}
-
 \item{genome.obj}{The BSgenome object for the genome of interest.}
+
+\item{seq.len}{The desired length of the expanded sequences.}
 
 \item{ignore.strand}{Boolean. Whether or not to ignore strandedness when extracting sequences.
 Defaults to FALSE. If TRUE, the sequence from the forward strand is returned.}

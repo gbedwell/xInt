@@ -12,7 +12,8 @@ plot_density(
   y.label = "Genes / Mb",
   numeric.p = FALSE,
   seed = 1,
-  add.legend = TRUE
+  add.legend = TRUE,
+  plot.title = NULL
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ When TRUE, the actual p-values are given.}
 \item{seed}{Sets the seed in position_jitter(). Defaults to 1.}
 
 \item{add.legend}{Boolean. Whether or not to include a legend on the plots. Defaults to TRUE.}
+
+\item{plot.title}{The title of the plot. When NULL, no title is added.}
 }
 \value{
 A ggplot2 object.

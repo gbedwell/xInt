@@ -12,7 +12,7 @@ plot_global_overlap(
   print.plot = FALSE,
   add.title = FALSE,
   wrap = FALSE,
-  add.legend = TRUE,
+  add.legend = FALSE,
   plot.titles = NULL,
   y.scale = c("percent", "fraction"),
   ...
@@ -38,7 +38,7 @@ When TRUE, the actual p-values are given.}
 
 \item{wrap}{Boolean. Whether or not to wrap a list of plots into a single output. Defaults to FALSE.}
 
-\item{add.legend}{Boolean. Whether or not to include a legend on the plots. Defaults to TRUE.}
+\item{add.legend}{Boolean. Whether or not to include a legend on the plots. Defaults to FALSE.}
 
 \item{plot.titles}{A character vector containing the names of plot titles. Only used with stats.df is NULL and add.titles is TRUE.}
 }
